@@ -5,4 +5,8 @@ describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
     expect(transposeChord("G", 2)).toBe("A");
   });
+
+  it("pinapanatili ang quality ng chord", () => {
+    expect(transposeChord("Em", 2)).toBe("F#m");
+  });
 });
