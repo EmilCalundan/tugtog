@@ -14,4 +14,9 @@ describe("transposeChord", () => {
     expect(transposeChord("B", 1)).toBe("C");
     expect(transposeChord("A", 5)).toBe("D");
   });
+
+  it("bumababa ng key", () => {
+    expect(transposeChord("D", -2)).toBe("C");
+    expect(transposeChord("C", -1)).toBe("B");
+  });
 });

@@ -10,7 +10,7 @@ export function transposeChord(chord: string, semitones: number): string {
 
    // 2. I-transpose ang root lang
   const index = NOTES.indexOf(root);
-  const newRoot = NOTES[(index + semitones) % 12];
+  const newRoot = NOTES[((index + semitones) % 12 + 12) % 12];
   
   // 3. Pagdugtungin ulit
   return newRoot + quality;
