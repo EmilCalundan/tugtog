@@ -44,3 +44,20 @@ export function transposeChord(chord: string, semitones: number, useFlats = fals
 export function transposeText(text: string, semitones: number, useFlats = false): string {
   return text.replace(/\S+/g, (chord) => transposeChord(chord, semitones, useFlats));
 }
+
+// Mga chord shape na madaling tugtugin sa gitara nang walang barre
+const OPEN_SHAPES = ["C", "G", "D", "A", "E"];
+
+// Hanapin ang pinakamababang capo para magamit ang madaling chord shapes
+export function suggestCapo(key: string): { capo: number; shape: string } {
+  const keyIndex = KEYS.indexOf(key);
+
+  for (let capo = 0; capo < 12; capo++) {
+    const shape = KEYS[mod(keyIndex - capo, 12)];
+    if (OPEN_SHAPES.includes(shape)) {
+      return { capo, shape };
+    }
+  }
+
+  return { capo: 0, shape: key };
+}

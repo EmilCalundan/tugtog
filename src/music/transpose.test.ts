@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { transposeChord, transposeText, usesFlats } from "./transpose";
+import { transposeChord, transposeText, usesFlats, suggestCapo } from "./transpose";
 
 describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
@@ -52,5 +52,17 @@ describe("flats sa flat keys", () => {
     expect(transposeChord("A", 1, true)).toBe("Bb");
     expect(transposeChord("D/F#", -1, true)).toBe("Db/F");
     expect(transposeText("G C", -2, true)).toBe("F Bb");
+  });
+});
+
+describe("suggestCapo", () => {
+  it("walang capo kapag madali na ang key", () => {
+    expect(suggestCapo("G")).toEqual({ capo: 0, shape: "G" });
+  });
+
+  it("nagmumungkahi ng capo para sa mahirap na key", () => {
+    expect(suggestCapo("Bb")).toEqual({ capo: 1, shape: "A" });
+    expect(suggestCapo("Eb")).toEqual({ capo: 1, shape: "D" });
+    expect(suggestCapo("F#")).toEqual({ capo: 2, shape: "E" });
   });
 });

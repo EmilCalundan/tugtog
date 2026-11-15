@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { KEYS, transposeText, usesFlats } from "./music/transpose";
+import { KEYS, transposeText, usesFlats, suggestCapo } from "./music/transpose";
 import "./App.css";
 
 function App() {
@@ -9,6 +9,10 @@ function App() {
 
   const semitones = KEYS.indexOf(toKey) - KEYS.indexOf(fromKey);
   const result = transposeText(chords, semitones, usesFlats(toKey));
+
+  const capo = suggestCapo(toKey);
+  const shapeSemitones = KEYS.indexOf(capo.shape) - KEYS.indexOf(fromKey);
+  const shapeChords = transposeText(chords, shapeSemitones);
   
 
   return (
@@ -47,6 +51,18 @@ function App() {
 
       <h2>Resulta</h2>
       <pre className="result">{result}</pre>
+
+            <h2>Para sa gitara</h2>
+      {capo.capo === 0 ? (
+        <p>Walang capo. Tugtugin ang chords sa itaas.</p>
+      ) : (
+        <>
+          <p>
+            Capo {capo.capo}, gamitin ang {capo.shape} shapes:
+          </p>
+          <pre className="result">{shapeChords}</pre>
+        </>
+      )}
     </main>
   );
 }
