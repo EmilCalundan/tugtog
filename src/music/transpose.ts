@@ -10,7 +10,12 @@ export function transposeChord(chord: string, semitones: number): string {
 
    // 2. I-transpose ang root lang
   const index = NOTES.indexOf(root);
-  const newRoot = NOTES[((index + semitones) % 12 + 12) % 12];
+  const newRoot = NOTES[mod(index + semitones, 12)];
+
+  // Laging positibong natitira, hal. mod(-1, 12) = 11
+  function mod(n: number, m: number): number {
+    return ((n % m) + m) % m;
+  }
   
   // 3. Pagdugtungin ulit
   return newRoot + quality;
