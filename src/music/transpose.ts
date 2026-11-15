@@ -7,6 +7,13 @@ function mod(n: number, m: number): number {
 }
 
 export function transposeChord(chord: string, semitones: number): string {
+
+  // 0. Kung slash chord, i-transpose ang dalawang bahagi
+  if (chord.includes("/")) {
+    const [main, bass] = chord.split("/");
+    return transposeChord(main, semitones) + "/" + transposeChord(bass, semitones);
+  }
+
   // 1. Hatiin ang chord sa root at quality
   const match = chord.match(/^([A-G][#b]?)(.*)$/);
   if (!match) return chord;

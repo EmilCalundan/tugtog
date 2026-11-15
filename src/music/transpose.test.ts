@@ -24,4 +24,9 @@ describe("transposeChord", () => {
     expect(transposeChord("Bb", 2)).toBe("C");
     expect(transposeChord("Ebm", 2)).toBe("Fm");
   });
+
+    it("tina-transpose pati ang bass note", () => {
+    expect(transposeChord("D/F#", 2)).toBe("E/G#");
+    expect(transposeChord("Am/G", -2)).toBe("Gm/F");
+  });
 });
