@@ -9,4 +9,9 @@ describe("transposeChord", () => {
   it("pinapanatili ang quality ng chord", () => {
     expect(transposeChord("Em", 2)).toBe("F#m");
   });
+
+    it("umiikot pabalik sa simula", () => {
+    expect(transposeChord("B", 1)).toBe("C");
+    expect(transposeChord("A", 5)).toBe("D");
+  });
 });
