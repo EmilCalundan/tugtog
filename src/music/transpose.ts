@@ -1,4 +1,4 @@
-const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+export const NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const FLATS = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
 // Laging positibong natitira, hal. mod(-1, 12) = 11
@@ -30,4 +30,9 @@ export function transposeChord(chord: string, semitones: number): string {
 
   // 3. Pagdugtungin ulit
   return newRoot + quality;
+}
+
+// I-transpose ang bawat chord sa isang buong text, at panatilihin ang mga espasyo
+export function transposeText(text: string, semitones: number): string {
+  return text.replace(/\S+/g, (chord) => transposeChord(chord, semitones));
 }

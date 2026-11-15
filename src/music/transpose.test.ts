@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { transposeChord } from "./transpose";
+import { transposeChord, transposeText } from "./transpose";
 
 describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
@@ -28,5 +28,15 @@ describe("transposeChord", () => {
     it("tina-transpose pati ang bass note", () => {
     expect(transposeChord("D/F#", 2)).toBe("E/G#");
     expect(transposeChord("Am/G", -2)).toBe("Gm/F");
+  });
+});
+
+describe("transposeText", () => {
+  it("tina-transpose ang lahat ng chord sa isang linya", () => {
+    expect(transposeText("G D/F# Em C", 2)).toBe("A E/G# F#m D");
+  });
+
+  it("pinapanatili ang mga espasyo at bagong linya", () => {
+    expect(transposeText("G  D\nEm C", 2)).toBe("A  E\nF#m D");
   });
 });
