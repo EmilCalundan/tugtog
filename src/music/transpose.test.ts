@@ -19,4 +19,9 @@ describe("transposeChord", () => {
     expect(transposeChord("D", -2)).toBe("C");
     expect(transposeChord("C", -1)).toBe("B");
   });
+
+    it("nakakabasa ng flats", () => {
+    expect(transposeChord("Bb", 2)).toBe("C");
+    expect(transposeChord("Ebm", 2)).toBe("Fm");
+  });
 });
