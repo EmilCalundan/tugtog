@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NOTES, transposeText } from "./music/transpose";
+import { KEYS, transposeText, usesFlats } from "./music/transpose";
 import "./App.css";
 
 function App() {
@@ -7,8 +7,9 @@ function App() {
   const [fromKey, setFromKey] = useState("G");
   const [toKey, setToKey] = useState("A");
 
-  const semitones = NOTES.indexOf(toKey) - NOTES.indexOf(fromKey);
-  const result = transposeText(chords, semitones);
+  const semitones = KEYS.indexOf(toKey) - KEYS.indexOf(fromKey);
+  const result = transposeText(chords, semitones, usesFlats(toKey));
+  
 
   return (
     <main className="transposer">
@@ -19,7 +20,7 @@ function App() {
         <label>
           Original key
           <select value={fromKey} onChange={(e) => setFromKey(e.target.value)}>
-            {NOTES.map((note) => (
+            {KEYS.map((note) => (
               <option key={note} value={note}>{note}</option>
             ))}
           </select>
@@ -28,7 +29,7 @@ function App() {
         <label>
           Bagong key
           <select value={toKey} onChange={(e) => setToKey(e.target.value)}>
-            {NOTES.map((note) => (
+            {KEYS.map((note) => (
               <option key={note} value={note}>{note}</option>
             ))}
           </select>

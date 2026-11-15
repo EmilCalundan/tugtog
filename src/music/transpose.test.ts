@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { transposeChord, transposeText } from "./transpose";
+import { transposeChord, transposeText, usesFlats } from "./transpose";
 
 describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
@@ -38,5 +38,19 @@ describe("transposeText", () => {
 
   it("pinapanatili ang mga espasyo at bagong linya", () => {
     expect(transposeText("G  D\nEm C", 2)).toBe("A  E\nF#m D");
+  });
+});
+
+describe("flats sa flat keys", () => {
+  it("alam kung aling key ang gumagamit ng flats", () => {
+    expect(usesFlats("F")).toBe(true);
+    expect(usesFlats("Bb")).toBe(true);
+    expect(usesFlats("G")).toBe(false);
+  });
+
+  it("isinusulat ang chords bilang flats kapag hiningi", () => {
+    expect(transposeChord("A", 1, true)).toBe("Bb");
+    expect(transposeChord("D/F#", -1, true)).toBe("Db/F");
+    expect(transposeText("G C", -2, true)).toBe("F Bb");
   });
 });
