@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { transposeChord, transposeText, usesFlats, suggestCapo, toNashville, nashvilleText, isChord, isChordLine } from "./transpose";
+import { transposeChord, transposeText, usesFlats, suggestCapo, toNashville, nashvilleText, isChord, isChordLine, isSectionLine } from "./transpose";
 
 describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
@@ -101,5 +101,14 @@ describe("chords at lyrics", () => {
   it("chords lang ang tina-transpose, hindi ang lyrics", () => {
     const song = "[Verse]\nG       D\nDahil sa Ama";
     expect(transposeText(song, 2)).toBe("[Verse]\nA       E\nDahil sa Ama");
+  });
+});
+
+describe("isSectionLine", () => {
+  it("alam kung section label ang isang linya", () => {
+    expect(isSectionLine("[Verse]")).toBe(true);
+    expect(isSectionLine("  [Chorus 2]  ")).toBe(true);
+    expect(isSectionLine("G   D")).toBe(false);
+    expect(isSectionLine("Sa liwanag Mo")).toBe(false);
   });
 });

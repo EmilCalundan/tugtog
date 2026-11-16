@@ -26,22 +26,26 @@ export function Library({ chords, fromKey, onLoad }: LibraryProps) {
   const [message, setMessage] = useState("");
 
   // Kunin ang mga kanta mula sa Supabase
-  async function loadSongs() {
-    const { data, error } = await supabase
+  function fetchSongs() {
+    return supabase
       .from("songs")
       .select("id, title, artist, original_key, content")
       .order("created_at", { ascending: false });
+  }
 
-    if (error) {
-      setMessage(error.message);
-    } else {
-      setSongs(data);
-    }
+  async function loadSongs() {
+    const { data, error } = await fetchSongs();
+    if (error) setMessage(error.message);
+    else setSongs(data);
   }
 
   // Kunin ang mga kanta tuwing may bagong login
   useEffect(() => {
-    if (session) loadSongs();
+    if (!session) return;
+    fetchSongs().then(({ data, error }) => {
+      if (error) setMessage(error.message);
+      else setSongs(data);
+    });
   }, [session]);
 
   async function saveSong() {

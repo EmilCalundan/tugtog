@@ -49,6 +49,12 @@ export function isChordLine(line: string): boolean {
   return line.trim() !== "" && words.every(isChord);
 }
 
+// Section label ba ito? hal. "[Verse]", "[Chorus 2]"
+export function isSectionLine(line: string): boolean {
+  const trimmed = line.trim();
+  return trimmed.startsWith("[") && trimmed.endsWith("]");
+}
+
 // Baguhin ang bawat chord sa mga chord line lang, at panatilihin ang lyrics at mga espasyo
 function mapChordLines(text: string, change: (chord: string) => string): string {
   return text

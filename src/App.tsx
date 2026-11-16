@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { KEYS, transposeText, usesFlats, suggestCapo, nashvilleText } from "./music/transpose";
 import { Account } from "./components/Account";
 import { Library } from "./components/Library";
+import { SongView } from "./components/SongView";
+import { StageMode } from "./components/StageMode";
 
 // Kunin ang naka-save na value sa browser, o ang default kung wala
 function load(name: string, fallback: string): string {
@@ -19,6 +21,7 @@ function App() {
   const [fromKey, setFromKey] = useState(() => load("tugtog-from", "G"));
   const [toKey, setToKey] = useState(() => load("tugtog-to", "A"));
   const [theme, setTheme] = useState(() => load("tugtog-theme", "light"));
+  const [stage, setStage] = useState(false);
 
   // I-save sa browser tuwing may nagbabago
   useEffect(() => {
@@ -117,10 +120,19 @@ function App() {
         </label>
 
         <section className="rounded-xl border-2 border-amber-500 bg-white p-5 dark:bg-stone-900">
-          <h2 className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
-            Resulta · key ng {toKey}
-          </h2>
-           <pre className="mt-2 whitespace-pre-wrap font-mono text-lg sm:text-xl font-bold">{result}</pre>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+              Resulta · key ng {toKey}
+            </h2>
+            <button
+              type="button"
+              onClick={() => setStage(true)}
+              className="rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-bold text-stone-950 hover:bg-amber-400"
+            >
+              🎤 Stage mode
+            </button>
+          </div>
+          <SongView text={result} className="mt-3 text-base sm:text-lg" />
         </section>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -133,7 +145,7 @@ function App() {
                 <p className="mt-2 text-sm">
                   <strong>Capo {capo.capo}</strong>, gamitin ang {capo.shape} shapes:
                 </p>
-                <pre className="mt-1 whitespace-pre-wrap font-mono text-lg font-bold">{shapeChords}</pre>
+                <SongView text={shapeChords} className="mt-1 text-sm" />
               </>
             )}
           </section>
@@ -141,10 +153,12 @@ function App() {
           <section className="rounded-xl bg-white p-4 dark:bg-stone-900">
             <h2 className="text-xs font-bold uppercase tracking-widest text-stone-500">Nashville numbers</h2>
             <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">Pareho sa kahit anong key.</p>
-            <pre className="mt-1 whitespace-pre-wrap font-mono text-lg font-bold">{nashvilleText(chords, fromKey)}</pre>
+            <SongView text={nashvilleText(chords, fromKey)} className="mt-1 text-sm" />
           </section>
         </div>
       </main>
+
+      {stage && <StageMode text={result} title={`Key ng ${toKey}`} onClose={() => setStage(false)} />}
     </div>
   );
 }
