@@ -120,7 +120,7 @@ function App() {
           <h2 className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
             Resulta · key ng {toKey}
           </h2>
-          <pre className="mt-2 whitespace-pre-wrap font-mono text-2xl font-bold">{result}</pre>
+           <pre className="mt-2 whitespace-pre-wrap font-mono text-lg sm:text-xl font-bold">{result}</pre>
         </section>
 
         <div className="grid gap-4 sm:grid-cols-2">
