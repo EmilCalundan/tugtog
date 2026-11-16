@@ -12,6 +12,11 @@ export class DrumSounds {
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
   }
 
+  // Ang orasan ng audio, sa segundo. Mas eksakto ito kaysa sa orasan ng screen.
+  get now(): number {
+    return this.ctx.currentTime;
+  }
+
   resume() {
     if (this.ctx.state === "suspended") void this.ctx.resume();
   }
@@ -50,8 +55,9 @@ export class DrumSounds {
     osc.stop(t + length + 0.02);
   }
 
-  play(lane: Lane, accent = false) {
-    const t = this.ctx.currentTime + 0.005;
+  // Itakda ang tunog sa eksaktong oras (`when`, ayon sa orasan ng audio)
+  play(lane: Lane, accent = false, when = this.ctx.currentTime) {
+    const t = Math.max(when, this.ctx.currentTime);
     if (lane === "kick") this.tone(t, "sine", 140, 42, 0.42, 1);
     if (lane === "snare") {
       this.hiss(t, 0.2, "highpass", 1200, 0.55);

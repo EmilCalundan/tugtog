@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { STYLES, countLabels, groove, sectionKind, songSections, stepSeconds } from "../music/drums";
+import { STYLES, countLabels, groove, sectionKind, songSections, stepSeconds, tapTempo } from "../music/drums";
 import type { Lane, Style } from "../music/drums";
 import { DrumSounds } from "../lib/drumSounds";
 import { DrumKit } from "./DrumKit";
@@ -39,29 +39,56 @@ export function DrumsPanel({ text }: { text: string }) {
   const sounds = useRef<DrumSounds | null>(null);
   useEffect(() => () => sounds.current?.close(), []);
 
+  // Ang tunog ay itinatakda nang kaunti nang maaga sa orasan ng audio, para eksakto ang bawat palo.
+  // Ang ilaw ay sumusunod lang sa parehong orasan.
   useEffect(() => {
     if (!playing) return;
-    let frame = 0;
-    let last = performance.now();
-    let position = 0;
-    let lastStep = -1;
-    const tick = (now: number) => {
+    const audio = sounds.current;
+    const clock = () => (audio ? audio.now : performance.now() / 1000);
+    const queue: { step: number; time: number }[] = [];
+    let nextTime = clock() + 0.06;
+    let count = 0;
+
+    const schedule = () => {
       const { g, bpm } = live.current;
-      position += (now - last) / 1000 / stepSeconds(bpm, g.steps);
-      last = now;
-      const s = Math.floor(position) % g.steps;
-      if (s !== lastStep) {
-        lastStep = s;
-        setStep(s);
+      while (nextTime < clock() + 0.12) {
+        const s = count % g.steps;
         for (const lane of LANE_ORDER) {
-          if (g.lanes[lane]?.[s]) sounds.current?.play(lane, s === 0);
+          if (g.lanes[lane]?.[s]) audio?.play(lane, s === 0, nextTime);
         }
+        queue.push({ step: s, time: nextTime });
+        nextTime += stepSeconds(bpm, g.steps);
+        count++;
       }
-      frame = requestAnimationFrame(tick);
     };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    schedule();
+    const timer = setInterval(schedule, 25);
+
+    let frame = 0;
+    const draw = () => {
+      let shown: number | null = null;
+      while (queue.length > 0 && queue[0].time <= clock()) shown = queue.shift()!.step;
+      if (shown !== null) setStep(shown);
+      frame = requestAnimationFrame(draw);
+    };
+    frame = requestAnimationFrame(draw);
+
+    return () => {
+      clearInterval(timer);
+      cancelAnimationFrame(frame);
+    };
   }, [playing]);
+
+  // Tap tempo: i-tap kasabay ng beat ng kanta
+  const taps = useRef<number[]>([]);
+  function tap() {
+    const now = performance.now();
+    const last = taps.current[taps.current.length - 1];
+    if (last !== undefined && now - last > 2000) taps.current = [];
+    taps.current.push(now);
+    const found = tapTempo(taps.current);
+    if (found !== null) setBpm(found);
+  }
 
   function togglePlay() {
     if (!playing) {
@@ -141,6 +168,9 @@ export function DrumsPanel({ text }: { text: string }) {
           <span>Tempo · <span className="font-mono">{bpm} BPM</span>{bpm < 72 && " (mabagal, para mag-aral)"}</span>
           <input type="range" min={40} max={160} value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full accent-amber-500" />
         </label>
+        <button type="button" onClick={tap} aria-label="Tap tempo: i-tap kasabay ng beat ng kanta" className="h-12 shrink-0 rounded-xl border border-stone-200 px-4 text-sm font-bold active:bg-amber-100 dark:border-stone-700 dark:active:bg-amber-500/20">
+          Tap
+        </button>
       </div>
     </div>
   );

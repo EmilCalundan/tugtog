@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { groove, countLabels, stepSeconds, sectionKind, songSections } from "./drums";
+import { groove, countLabels, stepSeconds, sectionKind, songSections, tapTempo } from "./drums";
 
 const hitsOf = (lane: number[] | undefined) => (lane ?? []).flatMap((v, i) => (v ? [i] : []));
 
@@ -60,5 +60,25 @@ describe("sections", () => {
 
   it("kinukuha ang mga section ng kanta, walang ulit", () => {
     expect(songSections("[Verse 1]\nG\n[Chorus]\nC\n[Verse 2]\nG\n[Chorus]")).toEqual(["Verse 1", "Chorus", "Verse 2"]);
+  });
+});
+
+describe("tapTempo", () => {
+  it("kailangan ng hindi bababa sa 2 tap", () => {
+    expect(tapTempo([1000])).toBeNull();
+  });
+
+  it("ang average ng mga pagitan, sa BPM", () => {
+    expect(tapTempo([0, 500, 1000, 1500])).toBe(120);
+    expect(tapTempo([0, 830, 1660])).toBe(72);
+  });
+
+  it("ang huling 5 tap lang ang binibilang", () => {
+    expect(tapTempo([0, 1000, 2000, 2500, 3000, 3500, 4000])).toBe(120);
+  });
+
+  it("hindi lalampas sa 40 hanggang 160", () => {
+    expect(tapTempo([0, 100])).toBe(160);
+    expect(tapTempo([0, 3000])).toBe(40);
   });
 });

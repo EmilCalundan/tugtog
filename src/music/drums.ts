@@ -64,3 +64,11 @@ export function songSections(text: string): string[] {
   }
   return names;
 }
+
+// Tap tempo: mula sa oras ng mga tap (millisecond), kunin ang BPM. Ang huling 5 tap lang ang binibilang.
+export function tapTempo(times: number[]): number | null {
+  const recent = times.slice(-5);
+  if (recent.length < 2) return null;
+  const average = (recent[recent.length - 1] - recent[0]) / (recent.length - 1);
+  return Math.min(160, Math.max(40, Math.round(60000 / average)));
+}
