@@ -4,6 +4,7 @@ import { Account } from "./components/Account";
 import { Library } from "./components/Library";
 import { SongView } from "./components/SongView";
 import { StageMode } from "./components/StageMode";
+import { Setlists } from "./components/Setlists";
 
 // Kunin ang naka-save na value sa browser, o ang default kung wala
 function load(name: string, fallback: string): string {
@@ -86,6 +87,8 @@ function App() {
             setFromKey(song.original_key);
           }}
         />
+
+        <Setlists />
 
         <section className="flex items-end gap-3">
           <label className="flex flex-col gap-1 text-sm font-semibold text-stone-600 dark:text-stone-400">
