@@ -8,11 +8,22 @@ import type { Setlist } from "../lib/setlists";
 import { KEYS, nashvilleText, suggestCapo, transposeText } from "../music/transpose";
 import { SongView } from "../components/SongView";
 import { StageMode } from "../components/StageMode";
+import { GuitarPanel } from "../components/GuitarPanel";
+import { PianoPanel } from "../components/PianoPanel";
+import { BassPanel } from "../components/BassPanel";
+import { DrumsPanel } from "../components/DrumsPanel";
 import { ui } from "../components/ui";
 import { BackIcon, EditIcon, ExpandIcon } from "../components/Icons";
 
 const SIZES = ["text-sm", "text-base", "text-lg", "text-xl", "text-2xl"];
-const INSTRUMENTS = ["Gitara", "Piano", "Bass", "Drums"];
+const TABS = [
+  { id: "chords", label: "Chords" },
+  { id: "gitara", label: "Gitara" },
+  { id: "piano", label: "Piano" },
+  { id: "bass", label: "Bass" },
+  { id: "drums", label: "Drums" },
+] as const;
+type Tab = (typeof TABS)[number]["id"];
 const SAMPLE = "[Verse]\nG             D/F#\nSa liwanag Mo, ako'y lalakad\nEm            C\nHawak ang kamay Mo, di matatakot";
 
 function load(name: string, fallback: string): string {
@@ -48,6 +59,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   const [stage, setStage] = useState(false);
   const [setlists, setSetlists] = useState<Setlist[] | null>(null);
   const [message, setMessage] = useState("");
+  const [tab, setTab] = useState<Tab>("chords");
 
   useEffect(() => {
     if (scratch || !id) return;
@@ -151,17 +163,22 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
         )}
       </div>
 
-      {/* Mga instrumento: ang Chords lang muna; ang iba ay sa Project 3 */}
+      {/* Mga instrumento */}
       <nav aria-label="Instrumento" className="flex gap-1 overflow-x-auto border-b border-stone-200 dark:border-stone-800">
-        <span className="border-b-2 border-amber-500 px-3 pt-2 pb-3 font-semibold">Chords</span>
-        {INSTRUMENTS.map((name) => (
-          <span key={name} title="Malapit na" className="px-3 pt-2 pb-3 text-stone-400 dark:text-stone-600">
-            {name}
-          </span>
+        {TABS.map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setTab(id)}
+            aria-current={tab === id ? "page" : undefined}
+            className={`px-3 pt-2 pb-3 ${tab === id ? "border-b-2 border-amber-500 font-semibold" : "text-stone-500 hover:text-stone-900 dark:hover:text-stone-100"}`}
+          >
+            {label}
+          </button>
         ))}
       </nav>
 
-      {showCapo && capo.capo > 0 && (
+      {tab === "chords" && showCapo && capo.capo > 0 && (
         <div className="rounded-2xl bg-amber-50 p-4 dark:bg-amber-500/10">
           <p className="font-semibold">Capo {capo.capo}, gamitin ang {capo.shape} shapes:</p>
           <SongView text={shapeText} className="mt-2 text-sm" />
@@ -190,9 +207,19 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
         </div>
       )}
 
-      <article className={`${ui.card} overflow-x-auto p-5 md:p-8`}>
-        <SongView text={text} className={`leading-relaxed ${SIZES[size]}`} />
-      </article>
+      {tab === "gitara" ? (
+        <GuitarPanel key={key} text={transposeText(song.content, semitones, key)} shapeText={shapeText} capo={capo} />
+      ) : tab === "piano" ? (
+        <PianoPanel key={key} text={transposeText(song.content, semitones, key)} />
+      ) : tab === "bass" ? (
+        <BassPanel key={key} text={transposeText(song.content, semitones, key)} />
+      ) : tab === "drums" ? (
+        <DrumsPanel text={song.content} />
+      ) : (
+        <article className={`${ui.card} overflow-x-auto p-5 md:p-8`}>
+          <SongView text={text} className={`leading-relaxed ${SIZES[size]}`} />
+        </article>
+      )}
 
       {message && <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">{message}</p>}
 
