@@ -1,11 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KEYS, transposeText, usesFlats, suggestCapo } from "./music/transpose";
 import "./App.css";
 
+// Kunin ang naka-save na value sa browser, o ang default kung wala
+function load(name: string, fallback: string): string {
+  try {
+    return localStorage.getItem(name) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function App() {
-  const [chords, setChords] = useState("G D/F# Em C\nG D C C");
-  const [fromKey, setFromKey] = useState("G");
-  const [toKey, setToKey] = useState("A");
+  const [chords, setChords] = useState(() => load("tugtog-chords", "G D/F# Em C\nG D C C"));
+  const [fromKey, setFromKey] = useState(() => load("tugtog-from", "G"));
+  const [toKey, setToKey] = useState(() => load("tugtog-to", "A"));
+
+  // I-save sa browser tuwing may nagbabago
+  useEffect(() => {
+    try {
+      localStorage.setItem("tugtog-chords", chords);
+      localStorage.setItem("tugtog-from", fromKey);
+      localStorage.setItem("tugtog-to", toKey);
+    } catch {
+      // Walang problema kung hindi makapag-save, gaya ng sa private mode
+    }
+  }, [chords, fromKey, toKey]);
 
   const semitones = KEYS.indexOf(toKey) - KEYS.indexOf(fromKey);
   const result = transposeText(chords, semitones, usesFlats(toKey));

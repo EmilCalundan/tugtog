@@ -1,32 +1,55 @@
-# React + TypeScript + Vite
+# Tugtog
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A band practice web app that transposes chord charts to any key, with guitar capo suggestions. Built for worship teams, bands, and musicians learning their parts.
 
-Currently, two official plugins are available:
+**Live demo:** https://tugtog-delta.vercel.app/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Transpose a full chord chart to any key as you type
+- Handles major, minor, 7ths, sus, and slash chords (`D/F#` → `E/G#`)
+- Reads both sharps and flats, and writes flats in flat keys (`Bb`, not `A#`)
+- Suggests a guitar capo and easy open chord shapes for hard keys (Bb → capo 1, A shapes)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech stack
 
-## Expanding the Oxlint configuration
+- React 19 + TypeScript
+- Vite
+- Vitest, with the music logic built test-first (TDD)
+- Deployed on Vercel
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Run it locally
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+git clone https://github.com/EmilCalundan/tugtog.git
+cd tugtog
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Run the tests:
+
+```bash
+npm test
+```
+
+## How it works
+
+The music logic lives in `src/music/transpose.ts` and has no UI code, so it is easy to test:
+
+- `transposeChord` splits a chord into root and quality, moves the root, and keeps the quality
+- `transposeText` transposes every chord in a block of text and keeps the spacing
+- `suggestCapo` finds the lowest capo that turns a key into an open chord shape
+
+## Roadmap
+
+- [x] Chord transposer with tests
+- [x] Capo suggestion
+- [ ] Nashville number system
+- [ ] Song library and setlists (Supabase)
+- [ ] Parts for bass, piano, and drums
+- [ ] Animated instrument tutorials
+
+## Author
+
+Emil Calundan, Computer Science student at the University of Makati
