@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { KEYS, transposeText, usesFlats, suggestCapo, nashvilleText } from "./music/transpose";
 import { Account } from "./components/Account";
+import { Library } from "./components/Library";
 
 // Kunin ang naka-save na value sa browser, o ang default kung wala
 function load(name: string, fallback: string): string {
@@ -68,9 +69,18 @@ function App() {
           >
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
-          
-          <Account />
         </header>
+
+        <Account />
+
+        <Library
+          chords={chords}
+          fromKey={fromKey}
+          onLoad={(song) => {
+            setChords(song.content);
+            setFromKey(song.original_key);
+          }}
+        />
 
         <section className="flex items-end gap-3">
           <label className="flex flex-col gap-1 text-sm font-semibold text-stone-600 dark:text-stone-400">
