@@ -48,10 +48,10 @@ describe("flats sa flat keys", () => {
     expect(usesFlats("G")).toBe(false);
   });
 
-  it("isinusulat ang chords bilang flats kapag hiningi", () => {
-    expect(transposeChord("A", 1, true)).toBe("Bb");
-    expect(transposeChord("D/F#", -1, true)).toBe("Db/F");
-    expect(transposeText("G C", -2, true)).toBe("F Bb");
+  it("isinusulat ang chords bilang flats sa flat key", () => {
+    expect(transposeChord("A", 1, "F")).toBe("Bb");
+    expect(transposeChord("D/F#", -1, "Db")).toBe("Db/F");
+    expect(transposeText("G C", -2, "F")).toBe("F Bb");
   });
 });
 
@@ -110,5 +110,18 @@ describe("isSectionLine", () => {
     expect(isSectionLine("  [Chorus 2]  ")).toBe(true);
     expect(isSectionLine("G   D")).toBe(false);
     expect(isSectionLine("Sa liwanag Mo")).toBe(false);
+  });
+});
+
+describe("tamang spelling ayon sa key", () => {
+  it("gumagamit ng Bb sa key ng C, hindi A#", () => {
+    expect(transposeChord("C", -2, "C")).toBe("Bb");
+    expect(transposeChord("A#", 0, "F")).toBe("Bb");
+  });
+
+  it("pinapanatili ang sharps sa mga karaniwang bass note", () => {
+    expect(transposeChord("D/F#", 0, "C")).toBe("D/F#");
+    expect(transposeChord("E/G#", 0, "C")).toBe("E/G#");
+    expect(transposeChord("D/C", -2, "C")).toBe("C/Bb");
   });
 });

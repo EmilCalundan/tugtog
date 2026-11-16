@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KEYS, transposeText, usesFlats, suggestCapo, nashvilleText } from "./music/transpose";
+import { KEYS, transposeText, suggestCapo, nashvilleText } from "./music/transpose";
 import { Account } from "./components/Account";
 import { Library } from "./components/Library";
 import { SongView } from "./components/SongView";
@@ -46,11 +46,11 @@ function App() {
   }, [theme]);
 
   const semitones = KEYS.indexOf(toKey) - KEYS.indexOf(fromKey);
-  const result = transposeText(chords, semitones, usesFlats(toKey));
+  const result = transposeText(chords, semitones, toKey);
 
   const capo = suggestCapo(toKey);
   const shapeSemitones = KEYS.indexOf(capo.shape) - KEYS.indexOf(fromKey);
-  const shapeChords = transposeText(chords, shapeSemitones);
+  const shapeChords = transposeText(chords, shapeSemitones, capo.shape);
 
   const selectClass =
     "rounded-lg border border-stone-300 bg-white px-3 py-2 font-mono text-lg font-bold text-stone-900 focus:outline-2 focus:outline-amber-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100";
