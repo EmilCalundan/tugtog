@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { transposeChord, transposeText, usesFlats, suggestCapo, toNashville, nashvilleText } from "./transpose";
+import { transposeChord, transposeText, usesFlats, suggestCapo, toNashville, nashvilleText, isChord, isChordLine } from "./transpose";
 
 describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
@@ -78,5 +78,28 @@ describe("Nashville numbers", () => {
   it("gumagana sa slash chords at sa buong linya", () => {
     expect(toNashville("D/F#", "G")).toBe("5/7");
     expect(nashvilleText("G D/F# Em C", "G")).toBe("1 5/7 6m 4");
+  });
+});
+
+describe("chords at lyrics", () => {
+  it("alam kung chord ang isang salita", () => {
+    for (const chord of ["G", "Em", "Cmaj7", "Asus4", "D/F#", "F#m7", "Bb", "Gm7b5", "Cadd9", "em"]) {
+      expect(isChord(chord)).toBe(true);
+    }
+    for (const word of ["Dahil", "Ama", "ako", "[Verse", "Chorus", "Be"]) {
+      expect(isChord(word)).toBe(false);
+    }
+  });
+
+  it("alam kung chord line ang isang linya", () => {
+    expect(isChordLine("G   D/F#   Em")).toBe(true);
+    expect(isChordLine("Sa liwanag Mo")).toBe(false);
+    expect(isChordLine("Dahil sa Ama")).toBe(false);
+    expect(isChordLine("")).toBe(false);
+  });
+
+  it("chords lang ang tina-transpose, hindi ang lyrics", () => {
+    const song = "[Verse]\nG       D\nDahil sa Ama";
+    expect(transposeText(song, 2)).toBe("[Verse]\nA       E\nDahil sa Ama");
   });
 });

@@ -13,7 +13,9 @@ function load(name: string, fallback: string): string {
 }
 
 function App() {
-  const [chords, setChords] = useState(() => load("tugtog-chords", "G D/F# Em C\nG D C C"));
+    const [chords, setChords] = useState(() =>
+    load("tugtog-chords", "[Verse]\nG             D/F#\nSa liwanag Mo, ako'y lalakad\nEm            C\nHawak ang kamay Mo, di matatakot"),
+  );
   const [fromKey, setFromKey] = useState(() => load("tugtog-from", "G"));
   const [toKey, setToKey] = useState(() => load("tugtog-to", "A"));
   const [theme, setTheme] = useState(() => load("tugtog-theme", "light"));
@@ -105,9 +107,9 @@ function App() {
         </section>
 
         <label className="flex flex-col gap-1 text-sm font-semibold text-stone-600 dark:text-stone-400">
-          Chords
+          Chords at Lyrics
           <textarea
-            rows={5}
+            rows={12}
             value={chords}
             onChange={(e) => setChords(e.target.value)}
             className="rounded-lg border border-stone-300 bg-white p-3 font-mono text-base text-stone-900 focus:outline-2 focus:outline-amber-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"

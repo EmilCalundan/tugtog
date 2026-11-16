@@ -26,9 +26,35 @@ function noteIndex(note: string): number {
 
 // Hatiin ang chord sa root at quality, hal. "Em" → { root: "E", quality: "m" }
 function splitChord(chord: string): { root: string; quality: string } | null {
-  const match = chord.match(/^([A-G][#b]?)(.*)$/);
+ // Gawing malaking titik ang unang letra, para gumana rin ang "em" o "g"
+  const normalized = chord.charAt(0).toUpperCase() + chord.slice(1);
+  const match = normalized.match(/^([A-G][#b]?)(.*)$/);
   if (!match) return null;
   return { root: match[1], quality: match[2] };
+}
+
+// ---------- Chords at lyrics ----------
+
+// Chord ba ang salitang ito? hal. "Em" ✅, "Cmaj7" ✅, "D/F#" ✅, "Dahil" ❌
+const CHORD_PATTERN = /^[A-G][#b]?(maj|min|m|M|dim|aug|sus|add)?\d*((sus|add|maj|b|#)\d+)*(\/[A-G][#b]?)?$/;
+
+export function isChord(word: string): boolean {
+  const normalized = word.charAt(0).toUpperCase() + word.slice(1);
+  return CHORD_PATTERN.test(normalized);
+}
+
+// Chord line ba ito? Oo kung lahat ng salita ay chord.
+export function isChordLine(line: string): boolean {
+  const words = line.trim().split(/\s+/);
+  return line.trim() !== "" && words.every(isChord);
+}
+
+// Baguhin ang bawat chord sa mga chord line lang, at panatilihin ang lyrics at mga espasyo
+function mapChordLines(text: string, change: (chord: string) => string): string {
+  return text
+    .split("\n")
+    .map((line) => (isChordLine(line) ? line.replace(/\S+/g, change) : line))
+    .join("\n");
 }
 
 // ---------- Transpose ----------
@@ -51,9 +77,9 @@ export function transposeChord(chord: string, semitones: number, useFlats = fals
   return names[mod(noteIndex(parts.root) + semitones, 12)] + parts.quality;
 }
 
-// I-transpose ang bawat chord sa isang buong text, at panatilihin ang mga espasyo
+// I-transpose ang chords sa isang buong kanta. Hindi ginagalaw ang lyrics.
 export function transposeText(text: string, semitones: number, useFlats = false): string {
-  return text.replace(/\S+/g, (chord) => transposeChord(chord, semitones, useFlats));
+  return mapChordLines(text, (chord) => transposeChord(chord, semitones, useFlats));
 }
 
 // ---------- Capo ----------
@@ -88,5 +114,5 @@ export function toNashville(chord: string, key: string): string {
 }
 
 export function nashvilleText(text: string, key: string): string {
-  return text.replace(/\S+/g, (chord) => toNashville(chord, key));
+  return mapChordLines(text, (chord) => toNashville(chord, key));
 }
