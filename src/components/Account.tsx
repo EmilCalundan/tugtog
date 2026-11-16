@@ -3,9 +3,9 @@ import type { FormEvent } from "react";
 import { supabase } from "../lib/supabase";
 import { useSession } from "../lib/useSession";
 
-export function Account() {
+export function Account({ startOpen = false }: { startOpen?: boolean }) {
   const session = useSession();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(startOpen);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

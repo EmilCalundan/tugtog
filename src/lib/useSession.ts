@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 
-// Ibinibigay ang kasalukuyang login session, at nag-a-update kapag nag-login o nag-logout
-export function useSession(): Session | null {
-  const [session, setSession] = useState<Session | null>(null);
+// Ang kasalukuyang login session.
+// undefined = kinukuha pa, null = hindi naka-login, Session = naka-login
+export function useSession(): Session | null | undefined {
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));

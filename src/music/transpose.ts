@@ -63,6 +63,29 @@ function mapChordLines(text: string, change: (chord: string) => string): string 
     .join("\n");
 }
 
+// ---------- Spelling ng nota ayon sa key ----------
+
+const LETTERS = ["C", "D", "E", "F", "G", "A", "B"];
+const LETTER_PITCH = [0, 2, 4, 5, 7, 9, 11];
+
+// Para sa bawat layo mula sa key (0 hanggang 11): aling letra ng scale ang gagamitin.
+// hal. 10 semitones mula sa C = ika-7 letra (B), kaya "Bb" at hindi "A#"
+const DEGREE_FOR_DISTANCE = [0, 0, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6];
+
+// Isulat ang nota ayon sa key, hal. sa key ng C: Bb (hindi A#), at F# (hindi Gb)
+export function spellNote(pitch: number, key: string): string {
+  const distance = mod(pitch - noteIndex(key), 12);
+  const letterIndex = (LETTERS.indexOf(key.charAt(0)) + DEGREE_FOR_DISTANCE[distance]) % 7;
+  const letter = LETTERS[letterIndex];
+  const offset = mod(pitch - LETTER_PITCH[letterIndex] + 6, 12) - 6;
+
+  const name = offset === 0 ? letter : offset === 1 ? letter + "#" : offset === -1 ? letter + "b" : "";
+
+  // Iwasan ang mga pangalang nakalilito sa users, gaya ng E#, B#, Cb, Fb, o double sharp
+  if (name === "" || ["E#", "B#", "Cb", "Fb"].includes(name)) return NOTES[mod(pitch, 12)];
+  return name;
+}
+
 // ---------- Transpose ----------
 
 // Flats ba ang ginagamit sa key na ito?
@@ -70,22 +93,27 @@ export function usesFlats(key: string): boolean {
   return FLAT_KEYS.includes(key);
 }
 
-export function transposeChord(chord: string, semitones: number, useFlats = false): string {
+// Kapag may ibinigay na key, isusulat ang mga nota ayon sa key na iyon
+export function transposeChord(chord: string, semitones: number, key?: string): string {
   if (chord.includes("/")) {
     const [main, bass] = chord.split("/");
-    return transposeChord(main, semitones, useFlats) + "/" + transposeChord(bass, semitones, useFlats);
+    const newMain = transposeChord(main, semitones, key);
+    // Isulat ang bass ayon sa root ng chord, hal. E/G# (hindi E/Ab) at C/Bb (hindi C/A#)
+    const newRoot = splitChord(newMain)?.root ?? key;
+    return newMain + "/" + transposeChord(bass, semitones, newRoot);
   }
 
   const parts = splitChord(chord);
   if (!parts) return chord;
 
-  const names = useFlats ? FLATS : NOTES;
-  return names[mod(noteIndex(parts.root) + semitones, 12)] + parts.quality;
+  const pitch = mod(noteIndex(parts.root) + semitones, 12);
+  const root = key ? spellNote(pitch, key) : NOTES[pitch];
+  return root + parts.quality;
 }
 
 // I-transpose ang chords sa isang buong kanta. Hindi ginagalaw ang lyrics.
-export function transposeText(text: string, semitones: number, useFlats = false): string {
-  return mapChordLines(text, (chord) => transposeChord(chord, semitones, useFlats));
+export function transposeText(text: string, semitones: number, key?: string): string {
+  return mapChordLines(text, (chord) => transposeChord(chord, semitones, key));
 }
 
 // ---------- Capo ----------
