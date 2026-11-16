@@ -45,7 +45,7 @@ The music logic lives in `src/music/transpose.ts` and has no UI code, so it is e
 
 - [x] Chord transposer with tests
 - [x] Capo suggestion
-- [ ] Nashville number system
+- [x] Nashville number system
 - [ ] Song library and setlists (Supabase)
 - [ ] Parts for bass, piano, and drums
 - [ ] Animated instrument tutorials
