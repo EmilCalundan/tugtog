@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { KEYS, transposeText, usesFlats, suggestCapo, nashvilleText } from "./music/transpose";
+import { Account } from "./components/Account";
 
 // Kunin ang naka-save na value sa browser, o ang default kung wala
 function load(name: string, fallback: string): string {
@@ -67,6 +68,8 @@ function App() {
           >
             {theme === "dark" ? "☀️" : "🌙"}
           </button>
+          
+          <Account />
         </header>
 
         <section className="flex items-end gap-3">
