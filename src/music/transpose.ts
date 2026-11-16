@@ -61,3 +61,35 @@ export function suggestCapo(key: string): { capo: number; shape: string } {
 
   return { capo: 0, shape: key };
 }
+
+// Ang posisyon ng bawat semitone sa scale, mula sa key
+const DEGREES = ["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"];
+
+// Isulat ang chord bilang Nashville number, hal. Em sa key ng G = 6m
+export function toNashville(chord: string, key: string): string {
+  // 0. Kung slash chord, gawin ang dalawang bahagi
+  if (chord.includes("/")) {
+    const [main, bass] = chord.split("/");
+    return toNashville(main, key) + "/" + toNashville(bass, key);
+  }
+
+  // 1. Hatiin ang chord sa root at quality
+  const match = chord.match(/^([A-G][#b]?)(.*)$/);
+  if (!match) return chord;
+
+  const root = match[1];
+  const quality = match[2];
+
+  // 2. Hanapin ang posisyon ng root
+  let index = NOTES.indexOf(root);
+  if (index === -1) {
+    index = FLATS.indexOf(root);
+  }
+
+  // 3. Gaano kalayo ang root mula sa key?
+  return DEGREES[mod(index - KEYS.indexOf(key), 12)] + quality;
+}
+
+export function nashvilleText(text: string, key: string): string {
+  return text.replace(/\S+/g, (chord) => toNashville(chord, key));
+}

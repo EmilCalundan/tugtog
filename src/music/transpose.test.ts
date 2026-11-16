@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { transposeChord, transposeText, usesFlats, suggestCapo } from "./transpose";
+import { transposeChord, transposeText, usesFlats, suggestCapo, toNashville, nashvilleText } from "./transpose";
 
 describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
@@ -64,5 +64,19 @@ describe("suggestCapo", () => {
     expect(suggestCapo("Bb")).toEqual({ capo: 1, shape: "A" });
     expect(suggestCapo("Eb")).toEqual({ capo: 1, shape: "D" });
     expect(suggestCapo("F#")).toEqual({ capo: 2, shape: "E" });
+  });
+});
+
+describe("Nashville numbers", () => {
+  it("isinusulat ang chord bilang numero ayon sa key", () => {
+    expect(toNashville("G", "G")).toBe("1");
+    expect(toNashville("C", "G")).toBe("4");
+    expect(toNashville("Em", "G")).toBe("6m");
+    expect(toNashville("Bb", "F")).toBe("4");
+  });
+
+  it("gumagana sa slash chords at sa buong linya", () => {
+    expect(toNashville("D/F#", "G")).toBe("5/7");
+    expect(nashvilleText("G D/F# Em C", "G")).toBe("1 5/7 6m 4");
   });
 });

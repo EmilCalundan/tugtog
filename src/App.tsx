@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { KEYS, transposeText, usesFlats, suggestCapo } from "./music/transpose";
+import { KEYS, transposeText, usesFlats, suggestCapo, nashvilleText } from "./music/transpose";
 import "./App.css";
 
 // Kunin ang naka-save na value sa browser, o ang default kung wala
@@ -83,6 +83,10 @@ function App() {
           <pre className="result">{shapeChords}</pre>
         </>
       )}
+
+      <h2>Nashville numbers</h2>
+      <p>Pareho sa kahit anong key. Gamit ito ng maraming worship team.</p>
+      <pre className="result">{nashvilleText(chords, fromKey)}</pre>
     </main>
   );
 }
