@@ -17,7 +17,7 @@ export class BandSounds {
     comp.ratio.value = 4;
     comp.connect(this.ctx.destination);
     this.out = this.ctx.createGain();
-    this.out.gain.value = 0.7;
+    this.out.gain.value = 0.5;
     this.out.connect(comp);
     this.drums = new DrumSounds(this.ctx, this.out);
   }
@@ -44,7 +44,16 @@ export class BandSounds {
     const data = buffer.getChannelData(0);
     // Ang pag-average ng dalawang sample ay nagdadagdag ng kalahating sample na delay
     const n = Math.max(2, Math.round(rate / freq(midi) - 0.5));
-    for (let i = 0; i < n; i++) data[i] = Math.random() * 2 - 1;
+    // Ang unang "kalabit": ingay na pinalambot nang 4 na beses, para hindi matinis
+    const burst = Array.from({ length: n }, () => Math.random() * 2 - 1);
+    for (let pass = 0; pass < 4; pass++) {
+      const first = burst[0];
+      for (let i = 0; i < n - 1; i++) burst[i] = 0.5 * (burst[i] + burst[i + 1]);
+      burst[n - 1] = 0.5 * (burst[n - 1] + first);
+    }
+    const mean = burst.reduce((a, b) => a + b, 0) / n;
+    const peak = Math.max(...burst.map((v) => Math.abs(v - mean))) || 1;
+    for (let i = 0; i < n; i++) data[i] = (burst[i] - mean) / peak;
     const decay = 0.996;
     for (let i = n; i < length; i++) {
       data[i] = decay * 0.5 * (data[i - n] + data[i - n - 1 < 0 ? 0 : i - n - 1]);
@@ -53,7 +62,7 @@ export class BandSounds {
     return buffer;
   }
 
-  private pluck(midi: number, when: number, length: number, volume: number, tone = 3500) {
+  private pluck(midi: number, when: number, length: number, volume: number, tone = 2400) {
     const src = this.ctx.createBufferSource();
     src.buffer = this.stringBuffer(midi);
     const filter = this.ctx.createBiquadFilter();
