@@ -4,10 +4,11 @@ import { songChords } from "../music/guitar";
 import { PianoKeyboard } from "./PianoKeyboard";
 
 // Ang Piano tab: ang voicing ng bawat chord, kaliwa at kanang kamay
-export function PianoPanel({ text }: { text: string }) {
+export function PianoPanel({ text, current }: { text: string; current?: string }) {
   const chords = songChords(text);
   const [selected, setSelected] = useState(0);
-  const index = Math.min(selected, chords.length - 1);
+  const playingIndex = current ? chords.indexOf(current) : -1;
+  const index = playingIndex >= 0 ? playingIndex : Math.min(selected, chords.length - 1);
 
   if (chords.length === 0) return <p className="text-stone-500">Walang chords ang kantang ito.</p>;
 

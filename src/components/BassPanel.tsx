@@ -10,7 +10,7 @@ function where(p: Position): string {
 }
 
 // Ang Bass tab: ang root (o slash bass) ng bawat chord, sa E at A string
-export function BassPanel({ text }: { text: string }) {
+export function BassPanel({ text, current }: { text: string; current?: string }) {
   const steps = songChords(text)
     .map((chord) => {
       const note = bassNote(chord);
@@ -18,7 +18,8 @@ export function BassPanel({ text }: { text: string }) {
     })
     .filter((s) => s !== null);
   const [selected, setSelected] = useState(0);
-  const index = Math.min(selected, steps.length - 1);
+  const playingIndex = current ? steps.findIndex((s) => s.chord === current) : -1;
+  const index = playingIndex >= 0 ? playingIndex : Math.min(selected, steps.length - 1);
 
   if (steps.length === 0) return <p className="text-stone-500">Walang chords ang kantang ito.</p>;
 
@@ -34,7 +35,7 @@ export function BassPanel({ text }: { text: string }) {
     }
   });
 
-  const current = steps[index];
+  const step = steps[index];
   const description = steps.map((s, i) => `${i + 1}: ${s.note}, ${where(s.pos)}`).join("; ");
 
   return (
@@ -42,9 +43,9 @@ export function BassPanel({ text }: { text: string }) {
       <section aria-label="Leeg ng bass" className="rounded-2xl bg-stone-900 p-3 text-stone-50 shadow-lg shadow-stone-900/20 dark:bg-stone-950">
         <div className="flex items-baseline justify-between px-1.5">
           <div>
-            <span className="font-mono text-2xl font-bold text-amber-400">{current.note}</span>
+            <span className="font-mono text-2xl font-bold text-amber-400">{step.note}</span>
             <span className="ml-2 text-sm text-stone-400">
-              para sa <strong className="font-mono text-stone-50">{current.chord}</strong> · {where(current.pos)}
+              para sa <strong className="font-mono text-stone-50">{step.chord}</strong> · {where(step.pos)}
             </span>
           </div>
           <span className="text-xs text-stone-400">{index + 1} / {steps.length}</span>

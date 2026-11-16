@@ -3,14 +3,16 @@ import { guitarShape, songChords } from "../music/guitar";
 import { GuitarNeck } from "./GuitarNeck";
 
 // Ang Gitara tab: lahat ng chord sa kanta, at ang hugis ng napiling chord sa leeg ng gitara
-export function GuitarPanel({ text, shapeText, capo }: { text: string; shapeText: string; capo: { capo: number; shape: string } }) {
+// `current`: ang chord na tumutunog ngayon (habang naka-play), para sumunod ang leeg
+export function GuitarPanel({ text, shapeText, capo, current }: { text: string; shapeText: string; capo: { capo: number; shape: string }; current?: string }) {
   const [useCapo, setUseCapo] = useState(capo.capo > 0);
   const [selected, setSelected] = useState(0);
 
   const withCapo = useCapo && capo.capo > 0;
   const sounding = songChords(text);
   const shapes = withCapo ? songChords(shapeText) : sounding;
-  const index = Math.min(selected, shapes.length - 1);
+  const playingIndex = current ? sounding.indexOf(current) : -1;
+  const index = playingIndex >= 0 ? playingIndex : Math.min(selected, shapes.length - 1);
 
   if (shapes.length === 0) {
     return <p className="text-stone-500">Walang chords ang kantang ito.</p>;

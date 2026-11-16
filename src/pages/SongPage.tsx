@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router";
 import { useSession } from "../lib/useSession";
 import { getSong } from "../lib/songs";
@@ -12,6 +12,11 @@ import { GuitarPanel } from "../components/GuitarPanel";
 import { PianoPanel } from "../components/PianoPanel";
 import { BassPanel } from "../components/BassPanel";
 import { DrumsPanel } from "../components/DrumsPanel";
+import { PlayerBar } from "../components/PlayerBar";
+import { ensureBand, useSongPlayer } from "../lib/useSongPlayer";
+import type { Part } from "../lib/useSongPlayer";
+import type { BandSounds } from "../lib/bandSounds";
+import { songTimeline } from "../music/timeline";
 import { ui } from "../components/ui";
 import { BackIcon, EditIcon, ExpandIcon } from "../components/Icons";
 
@@ -60,6 +65,23 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   const [setlists, setSetlists] = useState<Setlist[] | null>(null);
   const [message, setMessage] = useState("");
   const [tab, setTab] = useState<Tab>("chords");
+  const [playing, setPlaying] = useState(false);
+  const [bpm, setBpm] = useState(72);
+  const [fullBand, setFullBand] = useState(false);
+  const bandSounds = useRef<BandSounds | null>(null);
+  useEffect(() => () => bandSounds.current?.close(), []);
+
+  // Ang mga chord ng kanta sa kasalukuyang key, mula simula hanggang dulo
+  const soundingText = song ? transposeText(song.content, KEYS.indexOf(toKey ?? song.original_key) - KEYS.indexOf(song.original_key), toKey ?? song.original_key) : "";
+  const timeline = songTimeline(soundingText);
+  const parts = new Set<Part>(fullBand ? ["gitara", "piano", "bass", "drums"] : tab === "gitara" || tab === "piano" || tab === "bass" ? [tab] : []);
+  const bar = useSongPlayer(bandSounds, timeline, bpm, parts, playing);
+  const current = playing ? timeline[bar]?.chord : undefined;
+
+  function togglePlay() {
+    if (!playing && !ensureBand(bandSounds)) return;
+    setPlaying(!playing);
+  }
 
   useEffect(() => {
     if (scratch || !id) return;
@@ -169,7 +191,10 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           <button
             key={id}
             type="button"
-            onClick={() => setTab(id)}
+            onClick={() => {
+              setTab(id);
+              if (id === "chords" || id === "drums") setPlaying(false);
+            }}
             aria-current={tab === id ? "page" : undefined}
             className={`px-3 pt-2 pb-3 ${tab === id ? "border-b-2 border-amber-500 font-semibold" : "text-stone-500 hover:text-stone-900 dark:hover:text-stone-100"}`}
           >
@@ -207,12 +232,26 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
         </div>
       )}
 
+      {(tab === "gitara" || tab === "piano" || tab === "bass") && (
+        <PlayerBar
+          playing={playing}
+          onToggle={togglePlay}
+          bpm={bpm}
+          onBpm={setBpm}
+          band={fullBand}
+          onBand={setFullBand}
+          timeline={timeline}
+          bar={bar}
+          instrument={TABS.find((t) => t.id === tab)!.label.toLowerCase()}
+        />
+      )}
+
       {tab === "gitara" ? (
-        <GuitarPanel key={key} text={transposeText(song.content, semitones, key)} shapeText={shapeText} capo={capo} />
+        <GuitarPanel key={key} text={soundingText} shapeText={shapeText} capo={capo} current={current} />
       ) : tab === "piano" ? (
-        <PianoPanel key={key} text={transposeText(song.content, semitones, key)} />
+        <PianoPanel key={key} text={soundingText} current={current} />
       ) : tab === "bass" ? (
-        <BassPanel key={key} text={transposeText(song.content, semitones, key)} />
+        <BassPanel key={key} text={soundingText} current={current} />
       ) : tab === "drums" ? (
         <DrumsPanel text={song.content} />
       ) : (

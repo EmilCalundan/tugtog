@@ -3,10 +3,13 @@ import type { Lane } from "../music/drums";
 // Mga tunog ng drums na ginagawa ng browser mismo (Web Audio), walang audio file na kailangan.
 export class DrumSounds {
   private ctx: AudioContext;
+  private out: AudioNode;
   private noise: AudioBuffer;
 
-  constructor() {
-    this.ctx = new AudioContext();
+  // Puwedeng ibigay ang AudioContext at output ng banda, para iisang orasan lang
+  constructor(ctx?: AudioContext, out?: AudioNode) {
+    this.ctx = ctx ?? new AudioContext();
+    this.out = out ?? this.ctx.destination;
     this.noise = this.ctx.createBuffer(1, this.ctx.sampleRate, this.ctx.sampleRate);
     const data = this.noise.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
@@ -38,7 +41,7 @@ export class DrumSounds {
     filter.frequency.value = freq;
     const gain = this.ctx.createGain();
     this.fade(gain, t, peak, length);
-    src.connect(filter).connect(gain).connect(this.ctx.destination);
+    src.connect(filter).connect(gain).connect(this.out);
     src.start(t);
     src.stop(t + length + 0.02);
   }
@@ -50,7 +53,7 @@ export class DrumSounds {
     osc.frequency.exponentialRampToValueAtTime(to, t + length * 0.4);
     const gain = this.ctx.createGain();
     this.fade(gain, t, peak, length);
-    osc.connect(gain).connect(this.ctx.destination);
+    osc.connect(gain).connect(this.out);
     osc.start(t);
     osc.stop(t + length + 0.02);
   }
