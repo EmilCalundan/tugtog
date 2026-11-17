@@ -1,28 +1,79 @@
 # Tugtog
 
-A band practice web app for chord charts with lyrics. Transpose any song to any key, play it in a full-screen stage view, and share setlists with your band. Built for bands, worship teams, singers, and musicians learning their parts.
+**Type a song's chords once, and every member of the band gets their own part.** Tugtog is a web app for bands, worship teams, singers, and people learning an instrument. It transposes chord charts with lyrics, shows each chord on a realistic guitar neck, piano keyboard, bass neck, and drum kit, and plays the song back so you can practice along.
 
-**Live demo:** https://tugtog-delta.vercel.app/
+**Live app:** https://tugtog-delta.vercel.app/ · The interface is in Filipino (Tagalog).
+
+<p>
+  <img src="docs/screenshots/1-chords.png" width="200" alt="Song with chords and lyrics, key and capo controls">
+  <img src="docs/screenshots/2-gitara.png" width="200" alt="Guitar tab with chord shape on a realistic neck and a play button">
+  <img src="docs/screenshots/3-piano.png" width="200" alt="Piano tab with left and right hand voicings on a keyboard">
+</p>
+<p>
+  <img src="docs/screenshots/4-drums.png" width="200" alt="Drum kit seen from above with the groove chart">
+  <img src="docs/screenshots/5-banda.png" width="200" alt="Band page with members and their instruments">
+  <img src="docs/screenshots/6-matuto.png" width="200" alt="Lesson explaining how to read a G7 chord">
+</p>
 
 ## Features
 
-- Transpose a full song with lyrics to any key; only chord lines change, lyrics stay as written
-- Handles major, minor, 7ths, sus, and slash chords (`D/F#` → `E/G#`)
-- Spells notes the way musicians expect for each key (`Bb` in C and F, `G#` in `E/G#`)
-- Suggests a guitar capo and easy open chord shapes for hard keys (Bb → capo 1, A shapes)
-- Nashville number system view
-- Stage mode: full-screen song view with bigger text, colored sections, and auto-scroll
-- Accounts with a private song library (save, open, update, delete)
-- Setlists with a key per song, reorder, stage mode for the whole set, and a read-only share link for the band
-- Light and dark mode
+**Chord charts**
+- Transpose a whole song with lyrics to any key. Only chord lines change; lyrics stay as written.
+- Spells notes the way musicians expect for the key (`Bb` in F, `G#` in `E/G#`) and handles 7ths, sus, add9, and slash chords.
+- Capo suggestions for hard keys (Bb → capo 1 with A shapes) and a Nashville number view.
+- Bar lines for more than one chord per bar: `| G  D/F# | Em  C |`.
+- Stage mode: full-screen view with large text and auto-scroll.
+
+**A part for every instrument**
+- **Guitar:** each chord on a realistic neck with finger numbers, open and muted strings, barres, and capo.
+- **Piano:** left-hand bass note and right-hand voicing near middle C.
+- **Bass:** the root (or slash bass) of each chord on the E and A strings, with tab.
+- **Drums:** a top-down kit that lights up on every hit, with grooves for intro, verse, pre-chorus, chorus, bridge, and outro.
+
+**Play-along**
+- Plays the song bar by bar on guitar, piano, bass, or the full band, and the neck or keyboard follows along.
+- Each song stores its tempo, time signature (4/4 or 6/8), and style (ballad, pop, rock, reggae), and the strum, bass, and drum patterns follow them.
+- Tap tempo to match a recording.
+
+**Bands and setlists**
+- Private song library and setlists with a key per song, plus a public read-only share link.
+- Create a band, invite members with a link, and assign instruments. When a bassist opens a song from the band's setlist, it opens on the Bass tab in the setlist's key.
+
+**Lessons**
+- How to read a chord symbol, capo, Nashville numbers, the first 8 guitar chords, strum patterns, building piano chords, finding bass notes, and drum grooves, all with sound.
 
 ## Tech stack
 
-- React 19 + TypeScript
-- Vite and Tailwind CSS
-- Supabase: Postgres, auth, and row-level security so each user only sees their own songs
-- Vitest, with the music logic built test-first (TDD)
-- Deployed on Vercel
+| Part | Choice |
+|---|---|
+| Frontend | React 19, TypeScript, Vite, React Router |
+| Styling | Tailwind CSS v4 (light and dark mode) |
+| Audio | Web Audio API, with no audio files |
+| Backend | Supabase: Postgres, auth, row-level security, SQL functions |
+| Tests | Vitest (137 tests), test-first for the music logic |
+| Hosting | Vercel, auto-deployed from `main` |
+
+## How it works
+
+**The music engine is plain TypeScript with no UI code** (`src/music/`), so it is easy to test.
+
+- `transpose.ts` decides whether a line holds chords or lyrics, moves each chord's root, and names the new note for the target key.
+- `guitar.ts` looks up open shapes and builds barre chords from E and A shapes for any other chord.
+- `piano.ts`, `bass.ts`, and `drums.ts` turn a chord into a voicing, a bass position, or a groove.
+- `arrangement.ts` turns a style and time signature into a pattern for each instrument. `barEvents` then decides which chord each hit belongs to when a bar holds more than one chord.
+
+**All sound is generated in the browser.**
+
+- **Guitar and bass:** plucked strings use the Karplus–Strong algorithm, a short burst of softened noise fed through a delay line.
+- **Piano and drums:** piano notes are layered oscillators, and the drums are shaped noise and sine sweeps.
+- **Timing:** notes are scheduled slightly ahead on the audio clock, and the screen follows that clock. This keeps the timing steady even when rendering is slow. The timing was checked by recording the app's output and analyzing it.
+
+**Data access is enforced in the database, not in the app.** Row-level security means users only see their own songs.
+
+- Band members can read, but not change, the setlists shared with their band and the songs in them.
+- Joining a band only happens through a `join_team` function that checks the invite code.
+- Small `security definer` helper functions keep the policies from referring to each other in a loop.
+- `supabase/tests/rls-test.sql` checks the policies with three simulated users: owner, member, and outsider.
 
 ## Run it locally
 
@@ -30,43 +81,53 @@ A band practice web app for chord charts with lyrics. Transpose any song to any 
 git clone https://github.com/EmilCalundan/tugtog.git
 cd tugtog
 npm install
-npm run dev
 ```
 
-Create a `.env.local` file with your Supabase project URL and publishable key:
+1. Create a Supabase project. In the **SQL Editor**, run these files in order:
+   1. `supabase/01-songs-setlists.sql`
+   2. `supabase/song-settings.sql`
+   3. `supabase/teams.sql`
+2. Create `.env.local` with your project URL and publishable key:
+   ```
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   ```
+3. Start the app and run the tests:
+   ```bash
+   npm run dev
+   npm test
+   ```
+
+## Project structure
 
 ```
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+src/
+  music/       chord, instrument, groove, and arrangement logic (with tests)
+  lib/         Supabase data access, audio engine, and hooks
+  components/  guitar neck, piano keyboard, bass neck, drum kit, panels
+  pages/       songs, editor, setlists, bands, lessons, account
+supabase/      SQL for tables, policies, and functions
 ```
-
-Run the tests:
-
-```bash
-npm test
-```
-
-## How it works
-
-The music logic lives in `src/music/transpose.ts` and has no UI code, so it is easy to test:
-
-- `isChordLine` decides whether a line is chords or lyrics, so lyrics are never changed
-- `transposeChord` splits a chord into root and quality, moves the root, and keeps the quality
-- `spellNote` names each note for the target key, and spells a slash bass from its chord root
-- `suggestCapo` finds the lowest capo that turns a key into an open chord shape
-
-Shared setlists are read through a Postgres function (`get_shared_setlist`), so anyone with the link can view a setlist without seeing any other data.
 
 ## Roadmap
 
-- [x] Chord transposer with tests
-- [x] Capo suggestion
-- [x] Nashville number system
-- [x] Lyrics with chords, and stage mode
-- [x] Song library, setlists, and share link (Supabase)
-- [ ] Parts for bass, piano, and drums
-- [ ] Animated instrument tutorials
+- [x] Chord transposer, capo, and Nashville numbers
+- [x] Song library, setlists, and share link
+- [x] Parts for guitar, piano, bass, and drums
+- [x] Play-along with per-song tempo, time signature, and style
+- [x] Bands with invite links and instrument-specific setlists
+- [x] Lessons
+- [ ] Pilot with a real band
+- [ ] Start from any bar, and loop a section
+- [ ] Custom email sending for sign-up confirmation
+
+## What I learned
+
+<!-- Isulat ito sa sarili mong salita. Ito ang mga halimbawa; palitan o tanggalin. -->
+- Writing the music logic test-first made it safe to change. Bar lines, slash chords, and 6/8 were added without breaking older songs.
+- Row-level security moves access rules into the database. Getting policies on three related tables to work without recursion taught me how Postgres evaluates them.
+- Browser timers are not precise enough for music; scheduling on the audio clock is.
 
 ## Author
 
-Emil Calundan, Computer Science student at the University of Makati
+Emil Calundan, Computer Science student (Diploma in Application Development) at the University of Makati.
