@@ -1,7 +1,7 @@
 import { isSectionLine } from "./transpose";
 
 export type Lane = "crash" | "ride" | "hihat" | "snare" | "kick";
-export type Style = "ballad" | "pop" | "rock" | "sixeight";
+export type Style = "ballad" | "pop" | "rock" | "reggae" | "sixeight";
 export type Kind = "verse" | "chorus";
 export type Groove = { steps: number; lanes: Partial<Record<Lane, number[]>> };
 
@@ -9,6 +9,7 @@ export const STYLES: { id: Style; label: string }[] = [
   { id: "ballad", label: "Ballad" },
   { id: "pop", label: "Pop" },
   { id: "rock", label: "Rock" },
+  { id: "reggae", label: "Reggae" },
   { id: "sixeight", label: "6/8" },
 ];
 
@@ -22,6 +23,7 @@ const BASE: Record<Style, { steps: number; cymbal: number[]; snare: number[]; ki
   ballad: { steps: 16, cymbal: EIGHTHS, snare: [4, 12], kick: [0, 8] },
   pop: { steps: 16, cymbal: EIGHTHS, snare: [4, 12], kick: [0, 8, 10] },
   rock: { steps: 16, cymbal: EIGHTHS, snare: [4, 12], kick: [0, 6, 8, 10] },
+  reggae: { steps: 16, cymbal: EIGHTHS, snare: [4, 12], kick: [0, 6, 8] },
   sixeight: { steps: 6, cymbal: [0, 1, 2, 3, 4, 5], snare: [3], kick: [0] },
 };
 
@@ -45,9 +47,12 @@ export function countLabels(steps: number): string[] {
   return Array.from({ length: steps }, (_, i) => String(i + 1));
 }
 
-// Haba ng isang hakbang sa segundo. 4/4: 16th note. 6/8: eighth note, at ang BPM ay bawat 3 eighth.
+// Haba ng isang hakbang sa segundo. Sa 6/8, ang BPM ay bawat 3 eighth (dotted quarter).
+// 16 = 4/4 sa 16ths, 6 = 6/8 sa eighths, 12 = 6/8 sa 16ths
 export function stepSeconds(bpm: number, steps: number): number {
-  return steps === 6 ? 60 / bpm / 3 : 60 / bpm / 4;
+  if (steps === 6) return 60 / bpm / 3;
+  if (steps === 12) return 60 / bpm / 6;
+  return 60 / bpm / 4;
 }
 
 export function sectionKind(name: string): Kind {

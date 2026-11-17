@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import type { SongStyle, TimeSignature } from "../music/arrangement";
 
 // Ang itsura ng isang kanta sa database
 export type Song = {
@@ -7,11 +8,14 @@ export type Song = {
   artist: string;
   original_key: string;
   content: string;
+  bpm: number;
+  time_signature: TimeSignature;
+  style: SongStyle;
 };
 
 export type SongInput = Omit<Song, "id">;
 
-const FIELDS = "id, title, artist, original_key, content";
+const FIELDS = "id, title, artist, original_key, content, bpm, time_signature, style";
 
 export async function listSongs(): Promise<Song[]> {
   const { data, error } = await supabase.from("songs").select(FIELDS).order("title");

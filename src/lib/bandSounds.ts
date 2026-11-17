@@ -77,9 +77,14 @@ export class BandSounds {
   }
 
   // Strum ng gitara: pababa (low E muna) o pataas (high e muna, mas mahina)
-  strum(midis: (number | null)[], when: number, down: boolean, length: number) {
+  // `mute`: maikling "chuck" na pinipigilan ng palad, gaya ng sa reggae
+  strum(midis: (number | null)[], when: number, down: boolean, length: number, mute = false) {
     const notes = midis.filter((m): m is number => m !== null);
     const order = down ? notes : notes.slice(-4).reverse();
+    if (mute) {
+      order.forEach((m, i) => this.pluck(m, when + i * 0.006, 0.05, 0.3, 1600));
+      return;
+    }
     order.forEach((m, i) => this.pluck(m, when + i * 0.012, length, down ? 0.32 : 0.2));
   }
 

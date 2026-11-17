@@ -17,6 +17,8 @@ import { ensureBand, useSongPlayer } from "../lib/useSongPlayer";
 import type { Part } from "../lib/useSongPlayer";
 import type { BandSounds } from "../lib/bandSounds";
 import { songTimeline } from "../music/timeline";
+import { drumStyle } from "../music/arrangement";
+import type { SongStyle, TimeSignature } from "../music/arrangement";
 import { ui } from "../components/ui";
 import { BackIcon, EditIcon, ExpandIcon } from "../components/Icons";
 
@@ -53,7 +55,16 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   const session = useSession();
   const [song, setSong] = useState<Song | null>(() =>
     scratch
-      ? { id: "", title: "Subukan", artist: "", original_key: load("tugtog-from", "G"), content: load("tugtog-chords", SAMPLE) }
+      ? {
+          id: "",
+          title: "Subukan",
+          artist: "",
+          original_key: load("tugtog-from", "G"),
+          content: load("tugtog-chords", SAMPLE),
+          bpm: Number(load("tugtog-bpm", "72")) || 72,
+          time_signature: load("tugtog-time", "4/4") === "6/8" ? "6/8" : "4/4",
+          style: (["ballad", "pop", "rock", "reggae"].includes(load("tugtog-style", "")) ? load("tugtog-style", "") : "ballad") as SongStyle,
+        }
       : null,
   );
   const [error, setError] = useState("");
@@ -66,7 +77,12 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   const [message, setMessage] = useState("");
   const [tab, setTab] = useState<Tab>("chords");
   const [playing, setPlaying] = useState(false);
-  const [bpm, setBpm] = useState(72);
+  // Ang tempo at style ay galing sa kanta; puwedeng baguhin dito habang nag-eensayo
+  const [bpmOverride, setBpm] = useState<number | null>(null);
+  const [styleOverride, setStyle] = useState<SongStyle | null>(null);
+  const bpm = bpmOverride ?? song?.bpm ?? 72;
+  const style = styleOverride ?? song?.style ?? "ballad";
+  const time: TimeSignature = song?.time_signature ?? "4/4";
   const [fullBand, setFullBand] = useState(false);
   const bandSounds = useRef<BandSounds | null>(null);
   useEffect(() => () => bandSounds.current?.close(), []);
@@ -75,7 +91,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   const soundingText = song ? transposeText(song.content, KEYS.indexOf(toKey ?? song.original_key) - KEYS.indexOf(song.original_key), toKey ?? song.original_key) : "";
   const timeline = songTimeline(soundingText);
   const parts = new Set<Part>(fullBand ? ["gitara", "piano", "bass", "drums"] : tab === "gitara" || tab === "piano" || tab === "bass" ? [tab] : []);
-  const bar = useSongPlayer(bandSounds, timeline, bpm, parts, playing);
+  const bar = useSongPlayer(bandSounds, timeline, { bpm, style, time }, parts, playing);
   const current = playing ? timeline[bar]?.chord : undefined;
 
   function togglePlay() {
@@ -115,6 +131,9 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
     setSong(next);
     save("tugtog-chords", next.content);
     save("tugtog-from", next.original_key);
+    save("tugtog-time", next.time_signature);
+    save("tugtog-style", next.style);
+    save("tugtog-bpm", String(next.bpm));
   }
 
   async function openSetlists() {
@@ -221,6 +240,15 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
             >
               {KEYS.map((k) => <option key={k}>{k}</option>)}
             </select>
+            <select
+              aria-label="Time signature"
+              value={song.time_signature}
+              onChange={(e) => updateScratch({ time_signature: e.target.value as TimeSignature })}
+              className="h-10 rounded-lg border border-stone-200 bg-white px-2 font-mono font-bold dark:border-stone-700 dark:bg-stone-900"
+            >
+              <option>4/4</option>
+              <option>6/8</option>
+            </select>
           </label>
           <textarea
             aria-label="Chords at lyrics"
@@ -243,6 +271,9 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           timeline={timeline}
           bar={bar}
           instrument={TABS.find((t) => t.id === tab)!.label.toLowerCase()}
+          style={style}
+          onStyle={setStyle}
+          time={time}
         />
       )}
 
@@ -253,7 +284,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
       ) : tab === "bass" ? (
         <BassPanel key={key} text={soundingText} current={current} />
       ) : tab === "drums" ? (
-        <DrumsPanel text={song.content} />
+        <DrumsPanel key={time} text={song.content} initialStyle={drumStyle(style, time)} initialBpm={bpm} />
       ) : (
         <article className={`${ui.card} overflow-x-auto p-5 md:p-8`}>
           <SongView text={text} className={`leading-relaxed ${SIZES[size]}`} />

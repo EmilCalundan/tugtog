@@ -4,6 +4,8 @@ import { Link, Navigate, useNavigate, useParams } from "react-router";
 import { useSession } from "../lib/useSession";
 import { deleteSong, getSong, saveSong } from "../lib/songs";
 import { KEYS } from "../music/transpose";
+import { SONG_STYLES } from "../music/arrangement";
+import type { SongStyle, TimeSignature } from "../music/arrangement";
 import { ui } from "../components/ui";
 
 const TEMPLATE = "[Verse]\n\n\n[Chorus]\n";
@@ -17,6 +19,9 @@ export function EditorPage() {
   const [artist, setArtist] = useState("");
   const [originalKey, setOriginalKey] = useState("G");
   const [content, setContent] = useState(id ? "" : TEMPLATE);
+  const [bpm, setBpm] = useState("72");
+  const [time, setTime] = useState<TimeSignature>("4/4");
+  const [style, setStyle] = useState<SongStyle>("ballad");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -28,6 +33,9 @@ export function EditorPage() {
         setArtist(song.artist);
         setOriginalKey(song.original_key);
         setContent(song.content);
+        setBpm(String(song.bpm));
+        setTime(song.time_signature);
+        setStyle(song.style);
       })
       .catch(() => setMessage("Hindi mahanap ang kantang ito."));
   }, [id]);
@@ -40,9 +48,17 @@ export function EditorPage() {
       setMessage("Lagyan muna ng pamagat ang kanta.");
       return;
     }
+    const tempo = Number(bpm);
+    if (!Number.isInteger(tempo) || tempo < 40 || tempo > 200) {
+      setMessage("Ang tempo ay dapat 40 hanggang 200 BPM.");
+      return;
+    }
     setBusy(true);
     try {
-      const saved = await saveSong({ title: title.trim(), artist: artist.trim(), original_key: originalKey, content }, id);
+      const saved = await saveSong(
+        { title: title.trim(), artist: artist.trim(), original_key: originalKey, content, bpm: tempo, time_signature: time, style },
+        id,
+      );
       navigate(`/kanta/${saved.id}`, { replace: true });
     } catch {
       setMessage("Hindi na-save. Subukan ulit.");
@@ -90,6 +106,30 @@ export function EditorPage() {
           </select>
         </label>
       </div>
+
+      {/* Paano tutugtog ang player at drums sa kantang ito */}
+      <div className="grid grid-cols-3 gap-3">
+        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
+          Tempo (BPM)
+          <input type="number" inputMode="numeric" min={40} max={200} value={bpm} onChange={(e) => setBpm(e.target.value)} className={`${ui.input} w-full font-mono font-bold`} />
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
+          Time
+          <select value={time} onChange={(e) => setTime(e.target.value as TimeSignature)} className={`${ui.input} w-full font-mono font-bold`}>
+            <option>4/4</option>
+            <option>6/8</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
+          Style
+          <select value={style} onChange={(e) => setStyle(e.target.value as SongStyle)} disabled={time === "6/8"} className={`${ui.input} w-full disabled:opacity-50`}>
+            {SONG_STYLES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        </label>
+      </div>
+      <p className="-mt-2 text-xs text-stone-500">
+        {time === "6/8" ? "Sa 6/8, ang tempo ay bawat 3 bilang (1 at 4). Iisang pattern lang muna ang 6/8." : "I-tap ang tempo sa player kung hindi mo alam ang BPM ng kanta."}
+      </p>
 
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2">

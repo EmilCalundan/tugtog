@@ -19,6 +19,12 @@ describe("groove", () => {
     expect(hitsOf(g.lanes.crash)).toEqual([0]);
   });
 
+  it("reggae: kick sa 1, & ng 2 at 3; snare sa 2 at 4", () => {
+    const g = groove("reggae", "verse");
+    expect(hitsOf(g.lanes.kick)).toEqual([0, 6, 8]);
+    expect(hitsOf(g.lanes.snare)).toEqual([4, 12]);
+  });
+
   it("pop: may dagdag na kick sa & ng 3", () => {
     expect(hitsOf(groove("pop", "verse").lanes.kick)).toEqual([0, 8, 10]);
   });
@@ -48,6 +54,10 @@ describe("stepSeconds", () => {
 
   it("6/8: ang BPM ay bawat 3 eighth, kaya 60 BPM = 1/3 segundo bawat eighth", () => {
     expect(stepSeconds(60, 6)).toBeCloseTo(1 / 3);
+  });
+
+  it("6/8 sa 16th notes (12 hakbang): 60 BPM = 1/6 segundo bawat hakbang", () => {
+    expect(stepSeconds(60, 12)).toBeCloseTo(1 / 6);
   });
 });
 

@@ -14,11 +14,12 @@ const LANE_INFO: Record<Lane, { label: string; letter: string; color: string }> 
 const LANE_ORDER: Lane[] = ["crash", "ride", "hihat", "snare", "kick"];
 
 // Ang Drums tab: groove para sa bawat bahagi ng kanta, may tunog at tempo
-export function DrumsPanel({ text }: { text: string }) {
+// Nagsisimula sa style at tempo ng kanta, pero puwedeng palitan habang nag-eensayo
+export function DrumsPanel({ text, initialStyle = "ballad", initialBpm = 72 }: { text: string; initialStyle?: Style; initialBpm?: number }) {
   const sections = songSections(text);
-  const [style, setStyle] = useState<Style>("ballad");
+  const [style, setStyle] = useState<Style>(initialStyle);
   const [section, setSection] = useState(sections[0] ?? "Verse");
-  const [bpm, setBpm] = useState(72);
+  const [bpm, setBpm] = useState(initialBpm);
   const [playing, setPlaying] = useState(false);
   const [step, setStep] = useState(0);
 
