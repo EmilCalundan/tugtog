@@ -52,7 +52,7 @@
 | Styling | Tailwind CSS v4 (light and dark mode) |
 | Audio | Web Audio API, with no audio files |
 | Backend | Supabase: Postgres, auth, row-level security, SQL functions |
-| Tests | Vitest (137 tests), test-first for the music logic |
+| Tests | Vitest (142 unit tests, test-first for the music logic) and Playwright (19 end-to-end tests) |
 | Hosting | Vercel, auto-deployed from `main` |
 
 ## How it works
@@ -98,8 +98,11 @@ npm install
 3. Start the app and run the tests:
    ```bash
    npm run dev
-   npm test
+   npm test            # unit tests (Vitest)
+   npx playwright install chromium   # once
+   npm run e2e         # end-to-end tests in a real browser
    ```
+   The end-to-end tests use a mocked Supabase (`e2e/supabase-mock.ts`), so they never touch a real database.
 
 ## Project structure
 
@@ -109,6 +112,7 @@ src/
   lib/         Supabase data access, audio engine, and hooks
   components/  guitar neck, piano keyboard, bass neck, drum kit, panels
   pages/       songs, editor, setlists, bands, lessons, account
+e2e/           end-to-end tests (Playwright) with a mocked Supabase
 supabase/      SQL for tables, policies, and functions
 ```
 
