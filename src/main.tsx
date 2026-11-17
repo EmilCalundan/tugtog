@@ -36,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="banda/:id" element={<TeamPage />} />
           <Route path="sali/:code" element={<JoinPage />} />
           <Route path="matuto" element={<LearnPage />} />
+          <Route path="matuto/:topic" element={<LearnPage />} />
           <Route path="ako" element={<AccountPage />} />
           <Route path="bagong-password" element={<NewPasswordPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
