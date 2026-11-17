@@ -1,23 +1,36 @@
 import { describe, it, expect } from "vitest";
-import { songTimeline, guitarMidi, bassMidi } from "./timeline";
+import { songBars, guitarMidi, bassMidi } from "./timeline";
 
-describe("songTimeline", () => {
-  it("bawat chord sa kanta, sa pagkakasunod, kasama ang ulit at ang section", () => {
-    const text = "[Verse]\nG   D/F#\nSa liwanag Mo\nEm  C\nHawak\n[Chorus]\nC";
-    expect(songTimeline(text)).toEqual([
-      { chord: "G", section: "Verse" },
-      { chord: "D/F#", section: "Verse" },
-      { chord: "Em", section: "Verse" },
-      { chord: "C", section: "Verse" },
-      { chord: "C", section: "Chorus" },
+describe("songBars", () => {
+  it("walang |: bawat chord ay isang buong bar, kasama ang section", () => {
+    const text = "[Verse]\nG   D/F#\nSa liwanag Mo\n[Chorus]\nC";
+    expect(songBars(text, 4)).toEqual([
+      { section: "Verse", chords: [{ chord: "G", start: 0, beats: 4 }] },
+      { section: "Verse", chords: [{ chord: "D/F#", start: 0, beats: 4 }] },
+      { section: "Chorus", chords: [{ chord: "C", start: 0, beats: 4 }] },
     ]);
   });
 
-  it("walang section: walang laman ang section", () => {
-    expect(songTimeline("A E")).toEqual([
-      { chord: "A", section: "" },
-      { chord: "E", section: "" },
+  it("may |: dalawang chord sa isang bar ay hati", () => {
+    expect(songBars("| G  D | Em |", 4)).toEqual([
+      { section: "", chords: [{ chord: "G", start: 0, beats: 2 }, { chord: "D", start: 2, beats: 2 }] },
+      { section: "", chords: [{ chord: "Em", start: 0, beats: 4 }] },
     ]);
+  });
+
+  it("tatlong chord sa 4/4: 2 + 1 + 1", () => {
+    expect(songBars("| C G Am |", 4)[0].chords.map((c) => c.beats)).toEqual([2, 1, 1]);
+  });
+
+  it("6/8 (6 na eighth bawat bar): 3 + 3", () => {
+    expect(songBars("| G Em |", 6)[0].chords).toEqual([
+      { chord: "G", start: 0, beats: 3 },
+      { chord: "Em", start: 3, beats: 3 },
+    ]);
+  });
+
+  it("puwedeng ihalo: may linyang may | at wala", () => {
+    expect(songBars("G\n| C D |", 4).length).toBe(2);
   });
 });
 

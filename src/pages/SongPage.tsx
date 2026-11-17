@@ -13,10 +13,10 @@ import { PianoPanel } from "../components/PianoPanel";
 import { BassPanel } from "../components/BassPanel";
 import { DrumsPanel } from "../components/DrumsPanel";
 import { PlayerBar } from "../components/PlayerBar";
-import { ensureBand, useSongPlayer } from "../lib/useSongPlayer";
+import { beatsPerBar, ensureBand, useSongPlayer } from "../lib/useSongPlayer";
 import type { Part } from "../lib/useSongPlayer";
 import type { BandSounds } from "../lib/bandSounds";
-import { songTimeline } from "../music/timeline";
+import { songBars } from "../music/timeline";
 import { drumStyle } from "../music/arrangement";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 import { ui } from "../components/ui";
@@ -98,10 +98,10 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
 
   // Ang mga chord ng kanta sa kasalukuyang key, mula simula hanggang dulo
   const soundingText = song ? transposeText(song.content, KEYS.indexOf(toKey ?? song.original_key) - KEYS.indexOf(song.original_key), toKey ?? song.original_key) : "";
-  const timeline = songTimeline(soundingText);
+  const bars = songBars(soundingText, beatsPerBar(time));
   const parts = new Set<Part>(fullBand ? ["gitara", "piano", "bass", "drums"] : tab === "gitara" || tab === "piano" || tab === "bass" ? [tab] : []);
-  const bar = useSongPlayer(bandSounds, timeline, { bpm, style, time }, parts, playing);
-  const current = playing ? timeline[bar]?.chord : undefined;
+  const { bar, chord: playingChord } = useSongPlayer(bandSounds, bars, { bpm, style, time }, parts, playing);
+  const current = playing && playingChord ? playingChord : undefined;
 
   function togglePlay() {
     if (!playing && !ensureBand(bandSounds)) return;
@@ -277,8 +277,9 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           onBpm={setBpm}
           band={fullBand}
           onBand={setFullBand}
-          timeline={timeline}
+          bars={bars}
           bar={bar}
+          chord={playingChord}
           instrument={TABS.find((t) => t.id === tab)!.label.toLowerCase()}
           style={style}
           onStyle={setStyle}

@@ -112,3 +112,38 @@ export function barPlan(style: SongStyle, time: TimeSignature, kind: Kind): BarP
   const parts = time === "6/8" ? SIX_EIGHT : FOUR[style];
   return { steps, ...parts, drums: stretch(g.lanes, g.steps, steps) };
 }
+
+export type BarPart = "guitar" | "pianoRight" | "pianoLeft" | "bass";
+export type BarEvent = { part: BarPart; step: number; len: number; chord: number; down?: boolean; mute?: boolean; soft?: boolean };
+
+// Ang mga tutunog sa isang bar na may isa o higit pang chord.
+// `chordStarts`: kung saang step nagsisimula ang bawat chord (hal. [0, 8] = palit sa beat 3 ng 4/4).
+// - Bawat tama sa pattern ay gumagamit ng chord na tumutunog noon, at hindi lumalampas sa susunod na chord.
+// - Kapag walang tama ang isang bahagi sa loob ng isang chord, may idinadagdag sa simula ng chord.
+export function barEvents(plan: BarPlan, chordStarts: number[]): BarEvent[] {
+  const spans = chordStarts.map((start, i) => ({ start, end: chordStarts[i + 1] ?? plan.steps }));
+  const chordAt = (step: number) => spans.findLastIndex((s) => s.start <= step);
+  const parts: [BarPart, (Hit & Partial<Strum> & { soft?: boolean })[]][] = [
+    ["guitar", plan.guitar],
+    ["pianoRight", plan.pianoRight],
+    ["pianoLeft", plan.pianoLeft],
+    ["bass", plan.bass],
+  ];
+
+  const events: BarEvent[] = [];
+  for (const [part, hits] of parts) {
+    if (hits.length === 0) continue;
+    spans.forEach((span, chord) => {
+      const inside = hits.filter((h) => h.step >= span.start && h.step < span.end);
+      if (inside.length === 0) {
+        events.push({ part, step: span.start, len: span.end - span.start, chord, down: part === "guitar" ? true : undefined });
+      }
+    });
+    for (const hit of hits) {
+      const chord = chordAt(hit.step);
+      const len = Math.min(hit.len, spans[chord].end - hit.step);
+      events.push({ part, step: hit.step, len, chord, down: hit.down, mute: hit.mute, soft: hit.soft });
+    }
+  }
+  return events.sort((a, b) => a.step - b.step);
+}

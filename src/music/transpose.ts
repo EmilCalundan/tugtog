@@ -43,10 +43,15 @@ export function isChord(word: string): boolean {
   return CHORD_PATTERN.test(normalized);
 }
 
-// Chord line ba ito? Oo kung lahat ng salita ay chord.
+// Ang mga chord sa isang linya. Ang "|" ay bar line, hindi chord.
+export function chordTokens(line: string): string[] {
+  return line.split(/[\s|]+/).filter(Boolean);
+}
+
+// Chord line ba ito? Oo kung lahat ng salita ay chord (puwedeng may "|" na bar line).
 export function isChordLine(line: string): boolean {
-  const words = line.trim().split(/\s+/);
-  return line.trim() !== "" && words.every(isChord);
+  const words = chordTokens(line);
+  return words.length > 0 && words.every(isChord);
 }
 
 // Section label ba ito? hal. "[Verse]", "[Chorus 2]"
@@ -59,7 +64,7 @@ export function isSectionLine(line: string): boolean {
 function mapChordLines(text: string, change: (chord: string) => string): string {
   return text
     .split("\n")
-    .map((line) => (isChordLine(line) ? line.replace(/\S+/g, change) : line))
+    .map((line) => (isChordLine(line) ? line.replace(/[^\s|]+/g, change) : line))
     .join("\n");
 }
 

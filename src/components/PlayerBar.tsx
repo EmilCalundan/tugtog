@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { tapTempo } from "../music/drums";
-import type { TimelineItem } from "../music/timeline";
+import type { Bar } from "../music/timeline";
 import { SONG_STYLES } from "../music/arrangement";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 
@@ -11,8 +11,9 @@ type Props = {
   onBpm: (bpm: number) => void;
   band: boolean;
   onBand: (band: boolean) => void;
-  timeline: TimelineItem[];
+  bars: Bar[];
   bar: number;
+  chord: string;
   instrument: string;
   style: SongStyle;
   onStyle: (style: SongStyle) => void;
@@ -20,7 +21,7 @@ type Props = {
 };
 
 // Kontrol sa pagtugtog ng kanta: play, tempo, tap, at "buong banda"
-export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, timeline, bar, instrument, style, onStyle, time }: Props) {
+export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, bars, bar, chord, instrument, style, onStyle, time }: Props) {
   const taps = useRef<number[]>([]);
   function tap() {
     const now = performance.now();
@@ -31,8 +32,8 @@ export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, timelin
     if (found !== null) onBpm(found);
   }
 
-  if (timeline.length === 0) return null;
-  const item = timeline[Math.min(bar, timeline.length - 1)];
+  if (bars.length === 0) return null;
+  const section = bars[Math.min(bar, bars.length - 1)].section;
 
   return (
     <section aria-label="Patugtugin ang kanta" className="flex flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-3 dark:border-stone-700 dark:bg-stone-900">
@@ -52,12 +53,12 @@ export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, timelin
         <div className="min-w-0 flex-1" aria-live="off">
           <div className="truncate text-sm font-semibold">
             {playing ? (
-              <>Bar {bar + 1} / {timeline.length}{item.section && ` · ${item.section}`} · <span className="font-mono text-amber-700 dark:text-amber-400">{item.chord}</span></>
+              <>Bar {bar + 1} / {bars.length}{section && ` · ${section}`} · <span className="font-mono text-amber-700 dark:text-amber-400">{chord}</span></>
             ) : (
               <>Patugtugin sa {band ? "buong banda" : instrument}</>
             )}
           </div>
-          <div className="text-xs text-stone-500">Bawat chord = isang bar · {time} · {bpm} BPM</div>
+          <div className="text-xs text-stone-500">{bars.length} bar · {time} · {bpm} BPM</div>
         </div>
         <button type="button" onClick={tap} aria-label="Tap tempo: i-tap kasabay ng beat" className="h-11 shrink-0 rounded-xl border border-stone-200 px-3 text-sm font-bold active:bg-amber-100 dark:border-stone-700 dark:active:bg-amber-500/20">
           Tap

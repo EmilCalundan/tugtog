@@ -151,6 +151,9 @@ export function EditorPage() {
 
       <p className="rounded-xl bg-amber-50 p-3.5 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
         Isulat ang chords sa sariling linya, sa itaas ng lyrics. Lalabas ang mga ito nang kulay amber kapag tama ang pagkakasulat.
+        <br />
+        Isang bar ang bawat chord. Para sa dalawang chord sa isang bar, gamitin ang <code className="font-mono font-bold">|</code>, hal.{" "}
+        <code className="font-mono font-bold">| G  D | Em  C |</code>
       </p>
 
       {message && <p className="font-semibold text-red-700 dark:text-red-400">{message}</p>}

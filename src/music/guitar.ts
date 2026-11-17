@@ -1,4 +1,4 @@
-import { isChord, isChordLine } from "./transpose";
+import { chordTokens, isChord, isChordLine } from "./transpose";
 
 // Isang chord shape sa gitara. Ang mga array ay mula low E hanggang high e.
 // frets: null = huwag patunugin, 0 = bukas. fingers: 1 hintuturo hanggang 4 hinliliit, 0 = walang daliri.
@@ -118,7 +118,7 @@ export function songChords(text: string): string[] {
   const seen: string[] = [];
   for (const line of text.split("\n")) {
     if (!isChordLine(line)) continue;
-    for (const chord of line.trim().split(/\s+/)) {
+    for (const chord of chordTokens(line)) {
       if (!seen.includes(chord)) seen.push(chord);
     }
   }

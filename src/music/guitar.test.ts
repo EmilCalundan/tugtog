@@ -74,3 +74,9 @@ describe("neckWindow", () => {
     expect(neckWindow([3, 2, 0, 0, 0, 3], 2)).toBe(2);
   });
 });
+
+describe("songChords na may |", () => {
+  it("binabalewala ang |", () => {
+    expect(songChords("| G  D/F# | Em  G |")).toEqual(["G", "D/F#", "Em"]);
+  });
+});

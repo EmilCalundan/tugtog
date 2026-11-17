@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { barPlan, drumStyle } from "./arrangement";
+import { barPlan, barEvents, drumStyle } from "./arrangement";
 
 const steps = (hits: { step: number }[]) => hits.map((h) => h.step);
 
@@ -77,5 +77,29 @@ describe("barPlan ng intro at outro", () => {
 
   it("6/8 intro: isang strum, 12 hakbang", () => {
     expect(barPlan("ballad", "6/8", "intro").guitar).toEqual([{ step: 0, len: 12, down: true }]);
+  });
+});
+
+describe("barEvents: dalawa o higit pang chord sa isang bar", () => {
+  const plan = barPlan("ballad", "4/4", "verse");
+  const ev = (part: string, starts: number[]) =>
+    barEvents(plan, starts).filter((e) => e.part === part).map((e) => `${e.step}:${e.chord}:${e.len}`);
+
+  it("isang chord: kapareho ng pattern", () => {
+    expect(ev("bass", [0])).toEqual(["0:0:7", "8:0:7"]);
+  });
+
+  it("G sa beat 1-2, D sa 3-4: ang bawat tama ay sa chord na tumutunog noon", () => {
+    expect(ev("guitar", [0, 8])).toEqual(["0:0:4", "4:0:2", "6:0:2", "10:1:2", "12:1:2", "14:1:2"]);
+    expect(ev("bass", [0, 8])).toEqual(["0:0:7", "8:1:7"]);
+  });
+
+  it("hindi lumalampas ang tunog sa susunod na chord", () => {
+    expect(ev("pianoLeft", [0, 8])).toEqual(["0:0:8", "8:1:8"]);
+  });
+
+  it("chord na walang tama sa pattern: may idinadagdag sa simula nito", () => {
+    // 2 + 1 + 1 na beats: magsisimula ang ikatlong chord sa step 12, kung saan walang bass sa pattern
+    expect(ev("bass", [0, 8, 12])).toEqual(["0:0:7", "8:1:4", "12:2:4"]);
   });
 });

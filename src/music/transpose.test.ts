@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { transposeChord, transposeText, usesFlats, suggestCapo, toNashville, nashvilleText, isChord, isChordLine, isSectionLine } from "./transpose";
+import { transposeChord, transposeText, usesFlats, suggestCapo, toNashville, nashvilleText, isChord, isChordLine, isSectionLine, chordTokens } from "./transpose";
 
 describe("transposeChord", () => {
   it("itinataas ang simpleng major chord", () => {
@@ -123,5 +123,26 @@ describe("tamang spelling ayon sa key", () => {
     expect(transposeChord("D/F#", 0, "C")).toBe("D/F#");
     expect(transposeChord("E/G#", 0, "C")).toBe("E/G#");
     expect(transposeChord("D/C", -2, "C")).toBe("C/Bb");
+  });
+});
+
+describe("bar lines (|) sa chord line", () => {
+  it("chord line pa rin kahit may |", () => {
+    expect(isChordLine("| G  D/F# | Em  C |")).toBe(true);
+    expect(isChordLine("|G|D|")).toBe(true);
+  });
+
+  it("hindi chord line ang | lang, o may salitang hindi chord", () => {
+    expect(isChordLine("|")).toBe(false);
+    expect(isChordLine("| Sa liwanag |")).toBe(false);
+  });
+
+  it("chordTokens: ang mga chord lang, walang |", () => {
+    expect(chordTokens("| G  D/F# | Em |")).toEqual(["G", "D/F#", "Em"]);
+  });
+
+  it("transpose: buo pa rin ang | at ang espasyo", () => {
+    expect(transposeText("| G  D | C |", 2, "A")).toBe("| A  E | D |");
+    expect(transposeText("|G|D|", 2, "A")).toBe("|A|E|");
   });
 });
