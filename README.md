@@ -39,6 +39,8 @@
 - Private song library and setlists with a key per song, plus a public read-only share link.
 - Create a band, invite members with a link, and assign instruments. When a bassist opens a song from the band's setlist, it opens on the Bass tab in the setlist's key.
 
+- Users can delete their account and all their data from the account page.
+
 **Lessons**
 - How to read a chord symbol, capo, Nashville numbers, the first 8 guitar chords, strum patterns, building piano chords, finding bass notes, and drum grooves, all with sound.
 
@@ -87,6 +89,7 @@ npm install
    1. `supabase/01-songs-setlists.sql`
    2. `supabase/song-settings.sql`
    3. `supabase/teams.sql`
+   4. `supabase/delete-account.sql`
 2. Create `.env.local` with your project URL and publishable key:
    ```
    VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -123,6 +126,7 @@ supabase/      SQL for tables, policies, and functions
 
 ## What I learned
 
+<!-- Isulat ito sa sarili mong salita. Ito ang mga halimbawa; palitan o tanggalin. -->
 - Writing the music logic test-first made it safe to change. Bar lines, slash chords, and 6/8 were added without breaking older songs.
 - Row-level security moves access rules into the database. Getting policies on three related tables to work without recursion taught me how Postgres evaluates them.
 - Browser timers are not precise enough for music; scheduling on the audio clock is.

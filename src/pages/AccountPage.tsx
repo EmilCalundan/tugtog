@@ -1,4 +1,5 @@
 import { Account } from "../components/Account";
+import { DeleteAccount } from "../components/DeleteAccount";
 import { useTheme } from "../lib/useTheme";
 import { ui } from "../components/ui";
 
@@ -15,6 +16,7 @@ export function AccountPage() {
           {theme === "dark" ? "Naka-on" : "Naka-off"}
         </button>
       </div>
+      <DeleteAccount />
     </div>
   );
 }
