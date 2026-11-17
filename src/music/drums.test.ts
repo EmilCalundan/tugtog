@@ -92,3 +92,46 @@ describe("tapTempo", () => {
     expect(tapTempo([0, 3000])).toBe(40);
   });
 });
+
+describe("sectionKind: iba pang bahagi", () => {
+  it("kilala ang intro, outro, bridge at pre-chorus", () => {
+    expect(sectionKind("Intro")).toBe("intro");
+    expect(sectionKind("Outro")).toBe("outro");
+    expect(sectionKind("Ending")).toBe("outro");
+    expect(sectionKind("Bridge")).toBe("bridge");
+    expect(sectionKind("Tulay")).toBe("bridge");
+    expect(sectionKind("Pre-chorus")).toBe("prechorus");
+    expect(sectionKind("Prechorus 2")).toBe("prechorus");
+  });
+});
+
+describe("groove ng iba pang bahagi", () => {
+  it("intro: hi-hat sa bawat beat, kick sa 1, walang snare", () => {
+    const g = groove("ballad", "intro");
+    expect(hitsOf(g.lanes.hihat)).toEqual([0, 4, 8, 12]);
+    expect(hitsOf(g.lanes.kick)).toEqual([0]);
+    expect(g.lanes.snare).toBeUndefined();
+  });
+
+  it("outro: kapareho ng intro", () => {
+    expect(groove("pop", "outro")).toEqual(groove("pop", "intro"));
+  });
+
+  it("bridge: crash, ride, at kick sa bawat beat", () => {
+    const g = groove("ballad", "bridge");
+    expect(hitsOf(g.lanes.crash)).toEqual([0]);
+    expect(hitsOf(g.lanes.ride)).toEqual([0, 2, 4, 6, 8, 10, 12, 14]);
+    expect(hitsOf(g.lanes.kick)).toEqual([0, 4, 8, 12]);
+    expect(hitsOf(g.lanes.snare)).toEqual([4, 12]);
+  });
+
+  it("pre-chorus: verse na may dagdag na kick sa dulo", () => {
+    expect(hitsOf(groove("ballad", "prechorus").lanes.kick)).toEqual([0, 8, 12, 14]);
+  });
+
+  it("6/8 bridge at intro", () => {
+    expect(hitsOf(groove("sixeight", "bridge").lanes.kick)).toEqual([0, 3]);
+    expect(groove("sixeight", "intro").lanes.snare).toBeUndefined();
+    expect(hitsOf(groove("sixeight", "intro").lanes.hihat)).toEqual([0, 3]);
+  });
+});

@@ -62,3 +62,20 @@ describe("drumStyle", () => {
     expect(drumStyle("reggae", "4/4")).toBe("reggae");
   });
 });
+
+describe("barPlan ng intro at outro", () => {
+  it("isang mahabang strum lang bawat bar", () => {
+    const g = barPlan("pop", "4/4", "intro").guitar;
+    expect(g).toEqual([{ step: 0, len: 16, down: true }]);
+  });
+
+  it("bass at piano: isang beses sa 1, buong bar", () => {
+    const plan = barPlan("rock", "4/4", "outro");
+    expect(plan.bass).toEqual([{ step: 0, len: 15 }]);
+    expect(steps(plan.pianoRight)).toEqual([0]);
+  });
+
+  it("6/8 intro: isang strum, 12 hakbang", () => {
+    expect(barPlan("ballad", "6/8", "intro").guitar).toEqual([{ step: 0, len: 12, down: true }]);
+  });
+});

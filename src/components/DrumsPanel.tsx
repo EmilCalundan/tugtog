@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { STYLES, countLabels, groove, sectionKind, songSections, stepSeconds, tapTempo } from "../music/drums";
-import type { Lane, Style } from "../music/drums";
+import type { Kind, Lane, Style } from "../music/drums";
 import { DrumSounds } from "../lib/drumSounds";
 import { DrumKit } from "./DrumKit";
 
@@ -12,6 +12,14 @@ const LANE_INFO: Record<Lane, { label: string; letter: string; color: string }> 
   kick: { label: "Kick", letter: "●", color: "text-green-700 dark:text-green-400" },
 };
 const LANE_ORDER: Lane[] = ["crash", "ride", "hihat", "snare", "kick"];
+const KIND_TIPS: Record<Kind, string> = {
+  intro: "Intro: magaan muna. Hi-hat sa bawat beat at kick sa 1, walang snare.",
+  verse: "Verse: hi-hat ang kanang kamay, snare ang kaliwa, kick ang paa.",
+  prechorus: "Pre-chorus: parang verse, pero may dagdag na kick sa dulo papunta sa chorus.",
+  chorus: "Chorus: lumipat sa ride, at crash sa unang beat.",
+  bridge: "Bridge: crash pagpasok, ride, at kick sa bawat beat para may build-up.",
+  outro: "Outro: bumabagal ang pakiramdam. Hi-hat sa bawat beat at kick sa 1.",
+};
 
 // Ang Drums tab: groove para sa bawat bahagi ng kanta, may tunog at tempo
 // Nagsisimula sa style at tempo ng kanta, pero puwedeng palitan habang nag-eensayo
@@ -132,9 +140,9 @@ export function DrumsPanel({ text, initialStyle = "ballad", initialBpm = 72 }: {
           <div className="font-mono text-3xl leading-none font-bold text-amber-400 tabular-nums">{beat}</div>
           <div className="text-[11px] text-stone-400">{g.steps === 16 ? "beat / 4" : "bilang / 6"}</div>
         </div>
-        <DrumKit hits={playing ? hits : new Set()} hand={kind === "chorus" ? "ride" : "hihat"} />
+        <DrumKit hits={playing ? hits : new Set()} hand={g.lanes.ride ? "ride" : "hihat"} />
         <p className="px-1 text-xs text-stone-300">
-          {kind === "chorus" ? "Chorus: lumipat sa ride, at crash sa unang beat." : "Verse: hi-hat ang kanang kamay, snare ang kaliwa, kick ang paa."}
+          {KIND_TIPS[kind]}
         </p>
       </section>
 

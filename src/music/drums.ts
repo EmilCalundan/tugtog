@@ -2,7 +2,7 @@ import { isSectionLine } from "./transpose";
 
 export type Lane = "crash" | "ride" | "hihat" | "snare" | "kick";
 export type Style = "ballad" | "pop" | "rock" | "reggae" | "sixeight";
-export type Kind = "verse" | "chorus";
+export type Kind = "intro" | "verse" | "prechorus" | "chorus" | "bridge" | "outro";
 export type Groove = { steps: number; lanes: Partial<Record<Lane, number[]>> };
 
 export const STYLES: { id: Style; label: string }[] = [
@@ -27,16 +27,29 @@ const BASE: Record<Style, { steps: number; cymbal: number[]; snare: number[]; ki
   sixeight: { steps: 6, cymbal: [0, 1, 2, 3, 4, 5], snare: [3], kick: [0] },
 };
 
-// Ang groove para sa style at bahagi ng kanta. Sa chorus: ride at crash para mas malakas.
+// Ang groove para sa style at bahagi ng kanta.
+// Intro/Outro: magaan. Pre-chorus: dagdag na kick. Chorus: ride at crash. Bridge: ride, crash at kick sa bawat beat.
 export function groove(style: Style, kind: Kind): Groove {
   const base = BASE[style];
-  const cymbal = lane(base.steps, base.cymbal);
+  const n = base.steps;
+  const beats = n === 6 ? [0, 3] : [0, 4, 8, 12];
+
+  if (kind === "intro" || kind === "outro") {
+    return { steps: n, lanes: { hihat: lane(n, beats), kick: lane(n, [0]) } };
+  }
+
+  const cymbal = lane(n, base.cymbal);
+  const big = kind === "chorus" || kind === "bridge";
+  let kick = base.kick;
+  if (kind === "bridge") kick = beats;
+  if (kind === "prechorus") kick = [...new Set([...base.kick, ...(n === 6 ? [5] : [12, 14])])].sort((a, b) => a - b);
+
   return {
-    steps: base.steps,
+    steps: n,
     lanes: {
-      ...(kind === "chorus" ? { crash: lane(base.steps, [0]), ride: cymbal } : { hihat: cymbal }),
-      snare: lane(base.steps, base.snare),
-      kick: lane(base.steps, base.kick),
+      ...(big ? { crash: lane(n, [0]), ride: cymbal } : { hihat: cymbal }),
+      snare: lane(n, base.snare),
+      kick: lane(n, kick),
     },
   };
 }
@@ -55,8 +68,14 @@ export function stepSeconds(bpm: number, steps: number): number {
   return 60 / bpm / 4;
 }
 
+// Anong uri ng bahagi ang isang section, mula sa pangalan nito (Ingles o Tagalog)
 export function sectionKind(name: string): Kind {
-  return /chorus|koro/i.test(name) ? "chorus" : "verse";
+  if (/intro/i.test(name)) return "intro";
+  if (/outro|ending|coda|wakas/i.test(name)) return "outro";
+  if (/bridge|tulay/i.test(name)) return "bridge";
+  if (/pre-?\s?(chorus|koro)/i.test(name)) return "prechorus";
+  if (/chorus|koro|refrain/i.test(name)) return "chorus";
+  return "verse";
 }
 
 // Ang mga section ng kanta, hal. ["Verse 1", "Chorus"]

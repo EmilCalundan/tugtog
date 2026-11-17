@@ -98,6 +98,17 @@ function stretch(lanes: Partial<Record<Lane, number[]>>, from: number, to: numbe
 export function barPlan(style: SongStyle, time: TimeSignature, kind: Kind): BarPlan {
   const steps = time === "6/8" ? 12 : 16;
   const g = groove(drumStyle(style, time), kind);
+  // Intro at outro: isang mahabang strum at chord bawat bar, para magaan
+  if (kind === "intro" || kind === "outro") {
+    return {
+      steps,
+      guitar: [{ step: 0, len: steps, down: true }],
+      pianoRight: [{ step: 0, len: steps }],
+      pianoLeft: hits([0], steps),
+      bass: [{ step: 0, len: steps - 1 }],
+      drums: stretch(g.lanes, g.steps, steps),
+    };
+  }
   const parts = time === "6/8" ? SIX_EIGHT : FOUR[style];
   return { steps, ...parts, drums: stretch(g.lanes, g.steps, steps) };
 }

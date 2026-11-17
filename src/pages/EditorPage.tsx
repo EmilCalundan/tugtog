@@ -132,15 +132,13 @@ export function EditorPage() {
       </p>
 
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <label htmlFor="content" className="text-sm font-semibold text-stone-600 dark:text-stone-300">Chords at lyrics</label>
-          <div className="flex gap-2">
-            {["Verse", "Chorus", "Bridge"].map((name) => (
-              <button key={name} type="button" onClick={() => addSection(name)} className="h-8 rounded-lg border border-stone-200 bg-white px-2.5 text-sm font-semibold dark:border-stone-700 dark:bg-stone-900">
-                + {name}
-              </button>
-            ))}
-          </div>
+        <label htmlFor="content" className="text-sm font-semibold text-stone-600 dark:text-stone-300">Chords at lyrics</label>
+        <div role="group" aria-label="Magdagdag ng bahagi" className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
+          {["Intro", "Verse", "Pre-chorus", "Chorus", "Bridge", "Outro"].map((name) => (
+            <button key={name} type="button" onClick={() => addSection(name)} className="h-8 shrink-0 whitespace-nowrap rounded-lg border border-stone-200 bg-white px-2.5 text-sm font-semibold dark:border-stone-700 dark:bg-stone-900">
+              + {name}
+            </button>
+          ))}
         </div>
         <textarea
           id="content"
