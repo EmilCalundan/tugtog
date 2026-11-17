@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { tapTempo } from "../music/drums";
-import type { Bar } from "../music/timeline";
+import type { Bar, SectionRange } from "../music/timeline";
 import { SONG_STYLES } from "../music/arrangement";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 
@@ -18,10 +18,15 @@ type Props = {
   style: SongStyle;
   onStyle: (style: SongStyle) => void;
   time: TimeSignature;
+  ranges: SectionRange[];
+  start: number; // -1 = buong kanta
+  onStart: (index: number) => void;
+  loop: boolean;
+  onLoop: (loop: boolean) => void;
 };
 
 // Kontrol sa pagtugtog ng kanta: play, tempo, tap, at "buong banda"
-export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, bars, bar, chord, instrument, style, onStyle, time }: Props) {
+export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, bars, bar, chord, instrument, style, onStyle, time, ranges, start, onStart, loop, onLoop }: Props) {
   const taps = useRef<number[]>([]);
   function tap() {
     const now = performance.now();
@@ -55,7 +60,7 @@ export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, bars, b
             {playing ? (
               <>Bar {bar + 1} / {bars.length}{section && ` · ${section}`} · <span className="font-mono text-amber-700 dark:text-amber-400">{chord}</span></>
             ) : (
-              <>Patugtugin sa {band ? "buong banda" : instrument}</>
+              <>Patugtugin sa {band ? "buong banda" : instrument}{start >= 0 && ` · ${ranges[start]?.name}`}</>
             )}
           </div>
           <div className="text-xs text-stone-500">{bars.length} bar · {time} · {bpm} BPM</div>
@@ -76,6 +81,27 @@ export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, bars, b
           Buong banda
         </label>
       </div>
+      {ranges.length > 1 && (
+        <div className="flex items-center gap-3 border-t border-stone-200 pt-3 dark:border-stone-700">
+          <label className="flex min-w-0 flex-1 items-center gap-2 text-sm font-semibold">
+            <span className="shrink-0">Simula sa</span>
+            <select
+              value={start}
+              onChange={(e) => onStart(Number(e.target.value))}
+              className="h-9 min-w-0 flex-1 rounded-lg border border-stone-200 bg-white px-2 text-sm font-semibold dark:border-stone-700 dark:bg-stone-900"
+            >
+              <option value={-1}>Buong kanta</option>
+              {ranges.map((r, i) => (
+                <option key={r.name} value={i}>{r.name} · bar {r.start + 1}</option>
+              ))}
+            </select>
+          </label>
+          <label className={`flex shrink-0 items-center gap-2 text-sm font-semibold ${start < 0 ? "opacity-40" : ""}`}>
+            <input type="checkbox" checked={loop && start >= 0} disabled={start < 0} onChange={(e) => onLoop(e.target.checked)} className="size-4 accent-amber-500" />
+            Ulitin
+          </label>
+        </div>
+      )}
     </section>
   );
 }

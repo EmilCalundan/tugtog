@@ -123,7 +123,6 @@ supabase/      SQL for tables, policies, and functions
 
 ## What I learned
 
-<!-- Isulat ito sa sarili mong salita. Ito ang mga halimbawa; palitan o tanggalin. -->
 - Writing the music logic test-first made it safe to change. Bar lines, slash chords, and 6/8 were added without breaking older songs.
 - Row-level security moves access rules into the database. Getting policies on three related tables to work without recursion taught me how Postgres evaluates them.
 - Browser timers are not precise enough for music; scheduling on the audio clock is.

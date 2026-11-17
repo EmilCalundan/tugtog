@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { songBars, guitarMidi, bassMidi } from "./timeline";
+import { songBars, guitarMidi, bassMidi, sectionRanges, nextBar } from "./timeline";
 
 describe("songBars", () => {
   it("walang |: bawat chord ay isang buong bar, kasama ang section", () => {
@@ -48,5 +48,41 @@ describe("bassMidi", () => {
   it("E string at A string", () => {
     expect(bassMidi({ string: "E", fret: 0 })).toBe(28);
     expect(bassMidi({ string: "A", fret: 5 })).toBe(38);
+  });
+});
+
+describe("sectionRanges", () => {
+  const bar = (section: string) => ({ section, chords: [{ chord: "G", start: 0, beats: 4 }] });
+
+  it("magkakasunod na bar na pareho ang section ay iisang bahagi", () => {
+    const bars = [bar("Intro"), bar("Verse"), bar("Verse"), bar("Chorus"), bar("Chorus"), bar("Verse"), bar("Chorus")];
+    expect(sectionRanges(bars)).toEqual([
+      { name: "Intro", start: 0, end: 1 },
+      { name: "Verse", start: 1, end: 3 },
+      { name: "Chorus", start: 3, end: 5 },
+      { name: "Verse (2)", start: 5, end: 6 },
+      { name: "Chorus (2)", start: 6, end: 7 },
+    ]);
+  });
+
+  it("walang section: 'Simula'", () => {
+    expect(sectionRanges([bar(""), bar("")])).toEqual([{ name: "Simula", start: 0, end: 2 }]);
+  });
+});
+
+describe("nextBar", () => {
+  it("walang loop: susunod na bar, at babalik sa simula sa dulo ng kanta", () => {
+    expect(nextBar(2, 10, null)).toBe(3);
+    expect(nextBar(9, 10, null)).toBe(0);
+  });
+
+  it("may loop: babalik sa simula ng bahagi", () => {
+    const loop = { name: "Chorus", start: 3, end: 5 };
+    expect(nextBar(3, 10, loop)).toBe(4);
+    expect(nextBar(4, 10, loop)).toBe(3);
+  });
+
+  it("nasa labas ng loop (hal. binago habang tumutugtog): pupunta sa simula ng loop", () => {
+    expect(nextBar(8, 10, { name: "Verse", start: 1, end: 3 })).toBe(1);
   });
 });

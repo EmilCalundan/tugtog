@@ -9,7 +9,8 @@ import { barEvents, barPlan } from "../music/arrangement";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 import type { Lane } from "../music/drums";
 import { bassMidi, guitarMidi } from "../music/timeline";
-import type { Bar } from "../music/timeline";
+import { nextBar } from "../music/timeline";
+import type { Bar, SectionRange } from "../music/timeline";
 
 export type Part = "gitara" | "piano" | "bass" | "drums";
 
@@ -45,11 +46,13 @@ export function useSongPlayer(
   settings: PlayerSettings,
   parts: Set<Part>,
   playing: boolean,
+  // Saang bar magsisimula, at kung uulitin ang isang bahagi
+  range: { from: number; loop: SectionRange | null } = { from: 0, loop: null },
 ) {
   const [position, setPosition] = useState({ bar: 0, chord: "" });
-  const live = useRef({ bars, settings, parts });
+  const live = useRef({ bars, settings, parts, range });
   useEffect(() => {
-    live.current = { bars, settings, parts };
+    live.current = { bars, settings, parts, range };
   });
 
   useEffect(() => {
@@ -62,14 +65,14 @@ export function useSongPlayer(
     };
     const queue: { bar: number; chord: string; time: number }[] = [];
     let nextTime = audio.now + 0.08;
-    let barCount = 0;
+    let barIndex = live.current.range.from;
     let s = 0;
 
     const schedule = () => {
       const { bars, settings, parts } = live.current;
       if (bars.length === 0) return;
       while (nextTime < audio.now + 0.15) {
-        const barIndex = barCount % bars.length;
+        if (barIndex >= bars.length) barIndex = 0;
         const bar = bars[barIndex];
         const plan = barPlan(settings.style, settings.time, sectionKind(bar.section));
         const step = stepSeconds(settings.bpm, plan.steps);
@@ -100,7 +103,7 @@ export function useSongPlayer(
         s++;
         if (s >= plan.steps) {
           s = 0;
-          barCount++;
+          barIndex = nextBar(barIndex, bars.length, live.current.range.loop);
         }
       }
     };

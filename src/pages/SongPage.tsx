@@ -16,7 +16,7 @@ import { PlayerBar } from "../components/PlayerBar";
 import { beatsPerBar, ensureBand, useSongPlayer } from "../lib/useSongPlayer";
 import type { Part } from "../lib/useSongPlayer";
 import type { BandSounds } from "../lib/bandSounds";
-import { songBars } from "../music/timeline";
+import { sectionRanges, songBars } from "../music/timeline";
 import { drumStyle } from "../music/arrangement";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 import { ui } from "../components/ui";
@@ -99,8 +99,14 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   // Ang mga chord ng kanta sa kasalukuyang key, mula simula hanggang dulo
   const soundingText = song ? transposeText(song.content, KEYS.indexOf(toKey ?? song.original_key) - KEYS.indexOf(song.original_key), toKey ?? song.original_key) : "";
   const bars = songBars(soundingText, beatsPerBar(time));
+  // Pag-eensayo ng isang bahagi: saan magsisimula, at kung uulitin
+  const ranges = sectionRanges(bars);
+  const [startIndex, setStartIndex] = useState(-1);
+  const [loopOn, setLoopOn] = useState(false);
+  const startRange = ranges[startIndex] ?? null;
+  const range = { from: startRange?.start ?? 0, loop: loopOn && startRange ? startRange : null };
   const parts = new Set<Part>(fullBand ? ["gitara", "piano", "bass", "drums"] : tab === "gitara" || tab === "piano" || tab === "bass" ? [tab] : []);
-  const { bar, chord: playingChord } = useSongPlayer(bandSounds, bars, { bpm, style, time }, parts, playing);
+  const { bar, chord: playingChord } = useSongPlayer(bandSounds, bars, { bpm, style, time }, parts, playing, range);
   const current = playing && playingChord ? playingChord : undefined;
 
   function togglePlay() {
@@ -284,6 +290,14 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           style={style}
           onStyle={setStyle}
           time={time}
+          ranges={ranges}
+          start={startIndex}
+          onStart={(i) => {
+            setStartIndex(i);
+            if (i < 0) setLoopOn(false);
+          }}
+          loop={loopOn}
+          onLoop={setLoopOn}
         />
       )}
 

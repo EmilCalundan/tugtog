@@ -38,6 +38,36 @@ export function songBars(text: string, beatsPerBar: number): Bar[] {
   return bars;
 }
 
+export type SectionRange = { name: string; start: number; end: number };
+
+// Ang mga bahagi ng kanta bilang hanay ng bar (start kasama, end hindi kasama).
+// Kapag umulit ang pangalan, may numero: "Chorus", "Chorus (2)".
+export function sectionRanges(bars: Bar[]): SectionRange[] {
+  const ranges: SectionRange[] = [];
+  const seen = new Map<string, number>();
+  bars.forEach((bar, i) => {
+    const last = ranges[ranges.length - 1];
+    if (last && bars[i - 1].section === bar.section) {
+      last.end = i + 1;
+      return;
+    }
+    const base = bar.section || "Simula";
+    const count = (seen.get(base) ?? 0) + 1;
+    seen.set(base, count);
+    ranges.push({ name: count > 1 ? `${base} (${count})` : base, start: i, end: i + 1 });
+  });
+  return ranges;
+}
+
+// Ang susunod na bar. Kapag may loop, nananatili sa loob ng bahaging iyon.
+export function nextBar(current: number, total: number, loop: SectionRange | null): number {
+  if (loop) {
+    const next = current + 1;
+    return next >= loop.start && next < loop.end ? next : loop.start;
+  }
+  return (current + 1) % total;
+}
+
 // Standard tuning, low E hanggang high e (MIDI)
 const GUITAR_OPEN = [40, 45, 50, 55, 59, 64];
 
