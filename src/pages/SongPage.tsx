@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 import { useSession } from "../lib/useSession";
 import { getSong } from "../lib/songs";
 import type { Song } from "../lib/songs";
@@ -57,6 +57,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
     scratch
       ? {
           id: "",
+          owner_id: "",
           title: "Subukan",
           artist: "",
           original_key: load("tugtog-from", "G"),
@@ -68,14 +69,22 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
       : null,
   );
   const [error, setError] = useState("");
-  const [toKey, setToKey] = useState<string | null>(null);
+  // Puwedeng buksan sa ibang key at tab, hal. mula sa setlist ng banda: ?key=A&tab=bass
+  const [params] = useSearchParams();
+  const [toKey, setToKey] = useState<string | null>(() => {
+    const k = params.get("key");
+    return k && KEYS.includes(k) ? k : null;
+  });
   const [numbers, setNumbers] = useState(false);
   const [showCapo, setShowCapo] = useState(false);
   const [size, setSize] = useState(1);
   const [stage, setStage] = useState(false);
   const [setlists, setSetlists] = useState<Setlist[] | null>(null);
   const [message, setMessage] = useState("");
-  const [tab, setTab] = useState<Tab>("chords");
+  const [tab, setTab] = useState<Tab>(() => {
+    const t = params.get("tab");
+    return TABS.find((x) => x.id === t)?.id ?? "chords";
+  });
   const [playing, setPlaying] = useState(false);
   // Ang tempo at style ay galing sa kanta; puwedeng baguhin dito habang nag-eensayo
   const [bpmOverride, setBpm] = useState<number | null>(null);
@@ -164,7 +173,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
             {song.artist ? `${song.artist} · ` : ""}orihinal na key {song.original_key}
           </p>
         </div>
-        {!scratch && (
+        {!scratch && song.owner_id === session?.user.id && (
           <Link to={`/kanta/${song.id}/edit`} aria-label="I-edit ang kanta" className={ui.iconButton}>
             <EditIcon />
           </Link>
@@ -319,7 +328,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           <span className="text-lg font-bold">A+</span>
         </button>
         <span className="flex-1" />
-        {!scratch && session && (
+        {!scratch && session && song.owner_id === session.user.id && (
           <button type="button" onClick={openSetlists} className={`${ui.secondary} h-11 whitespace-nowrap px-3`}>
             + Setlist
           </button>

@@ -1,7 +1,17 @@
 import { supabase } from "./supabase";
 import type { SetlistSong } from "./setlist";
+import type { Instrument } from "./team";
 
-export type Setlist = { id: string; title: string; share_id: string };
+export type Setlist = {
+  id: string;
+  title: string;
+  share_id: string;
+  owner_id: string;
+  team_id: string | null;
+  teams: { name: string } | null;
+};
+
+const SETLIST_FIELDS = "id, title, share_id, owner_id, team_id, teams(name)";
 
 export type SetlistItem = {
   id: string;
@@ -13,20 +23,21 @@ export type SetlistItem = {
 export async function listSetlists(): Promise<Setlist[]> {
   const { data, error } = await supabase
     .from("setlists")
-    .select("id, title, share_id")
+    .select(SETLIST_FIELDS)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data;
+  return data as unknown as Setlist[];
 }
 
 export async function createSetlist(title: string): Promise<Setlist> {
-  const { data, error } = await supabase.from("setlists").insert({ title }).select("id, title, share_id").single();
+  const { data, error } = await supabase.from("setlists").insert({ title }).select(SETLIST_FIELDS).single();
   if (error) throw error;
-  return data;
+  return data as unknown as Setlist;
 }
 
 export async function getSetlist(id: string): Promise<{ setlist: Setlist; items: SetlistItem[] }> {
-  const { data: setlist, error } = await supabase.from("setlists").select("id, title, share_id").eq("id", id).single();
+  const { data, error } = await supabase.from("setlists").select(SETLIST_FIELDS).eq("id", id).single();
+  const setlist = data as unknown as Setlist;
   if (error) throw error;
 
   const { data: items, error: itemsError } = await supabase
@@ -37,6 +48,23 @@ export async function getSetlist(id: string): Promise<{ setlist: Setlist; items:
   if (itemsError) throw itemsError;
 
   return { setlist, items: (items ?? []) as unknown as SetlistItem[] };
+}
+
+// Ibahagi ang setlist sa isang banda (o alisin ang pagbabahagi kapag null)
+export async function setSetlistTeam(id: string, teamId: string | null): Promise<void> {
+  const { error } = await supabase.from("setlists").update({ team_id: teamId }).eq("id", id);
+  if (error) throw error;
+}
+
+// Ang instrumento mo sa isang banda, para mabuksan ang kanta sa tamang tab
+export async function myInstrument(teamId: string, userId: string): Promise<Instrument | null> {
+  const { data } = await supabase
+    .from("team_members")
+    .select("instrument")
+    .eq("team_id", teamId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  return (data?.instrument as Instrument | undefined) ?? null;
 }
 
 export async function deleteSetlist(id: string): Promise<void> {

@@ -25,6 +25,9 @@ export const LearnIcon = ({ className }: IconProps) => (
 export const UserIcon = ({ className }: IconProps) => (
   <svg {...base} className={className}><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg>
 );
+export const TeamIcon = ({ className }: IconProps) => (
+  <svg {...base} className={className}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2 .6 3.3 2.2 3.8 5" /></svg>
+);
 export const SearchIcon = ({ className }: IconProps) => (
   <svg {...base} className={className}><circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" /></svg>
 );

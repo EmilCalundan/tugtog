@@ -4,6 +4,7 @@ import type { SongStyle, TimeSignature } from "../music/arrangement";
 // Ang itsura ng isang kanta sa database
 export type Song = {
   id: string;
+  owner_id: string;
   title: string;
   artist: string;
   original_key: string;
@@ -13,12 +14,16 @@ export type Song = {
   style: SongStyle;
 };
 
-export type SongInput = Omit<Song, "id">;
+export type SongInput = Omit<Song, "id" | "owner_id">;
 
-const FIELDS = "id, title, artist, original_key, content, bpm, time_signature, style";
+const FIELDS = "id, owner_id, title, artist, original_key, content, bpm, time_signature, style";
 
+// Sariling kanta lang. Ang mga kanta ng kabanda (mula sa setlist ng banda) ay hindi kasama sa library mo.
 export async function listSongs(): Promise<Song[]> {
-  const { data, error } = await supabase.from("songs").select(FIELDS).order("title");
+  const { data: auth } = await supabase.auth.getSession();
+  const userId = auth.session?.user.id;
+  if (!userId) return [];
+  const { data, error } = await supabase.from("songs").select(FIELDS).eq("owner_id", userId).order("title");
   if (error) throw error;
   return data;
 }

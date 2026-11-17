@@ -11,6 +11,9 @@ import { SetlistPage } from './pages/SetlistPage.tsx'
 import { AccountPage } from './pages/AccountPage.tsx'
 import { LearnPage } from './pages/LearnPage.tsx'
 import { SharedSetlistPage } from './pages/SharedSetlistPage.tsx'
+import { TeamsPage } from './pages/TeamsPage.tsx'
+import { TeamPage } from './pages/TeamPage.tsx'
+import { JoinPage } from './pages/JoinPage.tsx'
 
 // Para gumana pa rin ang mga lumang share link na ?setlist=...
 const oldShareId = new URLSearchParams(window.location.search).get('setlist')
@@ -28,6 +31,9 @@ createRoot(document.getElementById('root')!).render(
           <Route path="kanta/:id/edit" element={<EditorPage />} />
           <Route path="setlist" element={<SetlistsPage />} />
           <Route path="setlist/:id" element={<SetlistPage />} />
+          <Route path="banda" element={<TeamsPage />} />
+          <Route path="banda/:id" element={<TeamPage />} />
+          <Route path="sali/:code" element={<JoinPage />} />
           <Route path="matuto" element={<LearnPage />} />
           <Route path="ako" element={<AccountPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

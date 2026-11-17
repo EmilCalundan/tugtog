@@ -46,7 +46,10 @@ export function SetlistsPage() {
           {setlists.map((setlist) => (
             <li key={setlist.id}>
               <Link to={`/setlist/${setlist.id}`} className={`${ui.card} flex items-center gap-3 p-4 hover:border-amber-500`}>
-                <span className="min-w-0 flex-1 truncate font-semibold">{setlist.title}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{setlist.title}</span>
+                  {setlist.teams && <span className={ui.muted}>{setlist.teams.name}</span>}
+                </span>
                 <ChevronIcon className="text-stone-400" />
               </Link>
             </li>

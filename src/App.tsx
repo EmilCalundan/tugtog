@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useLocation } from "react-router";
 import { useTheme } from "./lib/useTheme";
-import { MusicIcon, ListIcon, LearnIcon, UserIcon } from "./components/Icons";
+import { MusicIcon, ListIcon, LearnIcon, TeamIcon, UserIcon } from "./components/Icons";
 
 // "match": ang mga path na kabilang sa bawat tab
 const NAV = [
   { to: "/", label: "Mga kanta", Icon: MusicIcon, match: ["/kanta", "/subukan"] },
   { to: "/setlist", label: "Setlist", Icon: ListIcon, match: ["/setlist"] },
+  { to: "/banda", label: "Banda", Icon: TeamIcon, match: ["/banda", "/sali"] },
   { to: "/matuto", label: "Matuto", Icon: LearnIcon, match: ["/matuto"] },
   { to: "/ako", label: "Ako", Icon: UserIcon, match: ["/ako"] },
 ];
@@ -50,7 +51,7 @@ export default function App() {
 
       <nav
         aria-label="Pangunahing menu"
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t border-stone-200 bg-white/95 px-2 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden dark:border-stone-800 dark:bg-stone-900/95"
+        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-stone-200 bg-white/95 px-2 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden dark:border-stone-800 dark:bg-stone-900/95"
       >
         {NAV.map(({ to, label, Icon, match }) => (
           <NavLink
