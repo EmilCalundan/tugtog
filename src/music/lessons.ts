@@ -8,17 +8,17 @@ import type { SongStyle, TimeSignature } from "./arrangement";
 type Quality = { name: string; formula: string; feel: string };
 
 const QUALITIES: Record<string, Quality> = {
-  "": { name: "Major", formula: "1 – 3 – 5", feel: "Maliwanag at masaya ang tunog." },
-  m: { name: "Minor", formula: "1 – ♭3 – 5", feel: "Malambot o malungkot ang tunog." },
-  "7": { name: "Seventh", formula: "1 – 3 – 5 – ♭7", feel: "May tensyon, parang gustong lumipat sa susunod na chord." },
-  maj7: { name: "Major 7", formula: "1 – 3 – 5 – 7", feel: "Malambing at medyo jazzy." },
-  m7: { name: "Minor 7", formula: "1 – ♭3 – 5 – ♭7", feel: "Malambot na minor, madalas sa R&B at worship." },
-  sus2: { name: "Suspended 2", formula: "1 – 2 – 5", feel: "Walang 3rd, kaya parang bukas at naghihintay." },
-  sus4: { name: "Suspended 4", formula: "1 – 4 – 5", feel: "Walang 3rd; kadalasang bumabalik sa major pagkatapos." },
-  add9: { name: "Add 9", formula: "1 – 3 – 5 – 9", feel: "Major na may dagdag na kislap." },
-  dim: { name: "Diminished", formula: "1 – ♭3 – ♭5", feel: "Madilim at hindi mapakali; pangdugtong lang." },
-  aug: { name: "Augmented", formula: "1 – 3 – ♯5", feel: "Lumulutang at kakaiba." },
-  "6": { name: "Sixth", formula: "1 – 3 – 5 – 6", feel: "Matamis, parang lumang kanta." },
+  "": { name: "Major", formula: "1 – 3 – 5", feel: "Bright and happy." },
+  m: { name: "Minor", formula: "1 – ♭3 – 5", feel: "Soft or sad." },
+  "7": { name: "Seventh", formula: "1 – 3 – 5 – ♭7", feel: "Tense, like it wants to move to the next chord." },
+  maj7: { name: "Major 7", formula: "1 – 3 – 5 – 7", feel: "Warm and a little jazzy." },
+  m7: { name: "Minor 7", formula: "1 – ♭3 – 5 – ♭7", feel: "A soft minor, common in R&B and worship." },
+  sus2: { name: "Suspended 2", formula: "1 – 2 – 5", feel: "No 3rd, so it sounds open and waiting." },
+  sus4: { name: "Suspended 4", formula: "1 – 4 – 5", feel: "No 3rd; it usually resolves back to major." },
+  add9: { name: "Add 9", formula: "1 – 3 – 5 – 9", feel: "Major with extra sparkle." },
+  dim: { name: "Diminished", formula: "1 – ♭3 – ♭5", feel: "Dark and restless; used as a passing chord." },
+  aug: { name: "Augmented", formula: "1 – 3 – ♯5", feel: "Floating and strange." },
+  "6": { name: "Sixth", formula: "1 – 3 – 5 – 6", feel: "Sweet, like an old song." },
 };
 
 export type ChordExplanation = Quality & { root: string; quality: string; tones: string[]; bass?: string };

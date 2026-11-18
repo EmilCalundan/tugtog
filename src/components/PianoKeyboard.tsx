@@ -27,7 +27,7 @@ export function PianoKeyboard({ left, right, label }: { left: Note[]; right: Not
     else blacks.push({ midi, x: (octave * 7 + BLACK_AFTER[pc] + 1) * KEY_W - 8 });
   }
 
-  const description = `${label}. Kaliwang kamay: ${left.map((n) => n.name).join(", ")}. Kanang kamay: ${right.map((n) => n.name).join(", ")}.`;
+  const description = `${label}. Left hand: ${left.map((n) => n.name).join(", ")}. Right hand: ${right.map((n) => n.name).join(", ")}.`;
 
   return (
     <svg viewBox={`0 0 ${KEY_W * 14} ${TOP + WHITE_H + 4}`} role="img" aria-label={description} className="block h-auto w-full">
@@ -48,9 +48,9 @@ export function PianoKeyboard({ left, right, label }: { left: Note[]; right: Not
           <stop offset="1" stopColor="#1C1917" />
         </linearGradient>
         <linearGradient id="pk-right" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#F59E0B" />
-          <stop offset="0.7" stopColor="#FBBF24" />
-          <stop offset="1" stopColor="#D97706" />
+          <stop offset="0" stopColor="#9DB4D3" />
+          <stop offset="0.7" stopColor="#B9CBE3" />
+          <stop offset="1" stopColor="#7F97B8" />
         </linearGradient>
         <linearGradient id="pk-left" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#57534E" />

@@ -21,7 +21,7 @@ export function GuitarNeck({ shape, capo = 0, label }: { shape: Shape; capo?: nu
   const start = neckWindow(frets, capo);
   const end = start + FRET_WIDTHS.length;
   const fingersText = frets
-    .map((f, i) => (f === null ? `${STRING_NAMES[i]} huwag` : f === capo ? `${STRING_NAMES[i]} bukas` : `${STRING_NAMES[i]} fret ${f}`))
+    .map((f, i) => (f === null ? `${STRING_NAMES[i]} muted` : f === capo ? `${STRING_NAMES[i]} open` : `${STRING_NAMES[i]} fret ${f}`))
     .join(", ");
 
   return (
@@ -52,9 +52,9 @@ export function GuitarNeck({ shape, capo = 0, label }: { shape: Shape; capo?: nu
           <stop offset="1" stopColor="#B9C8D4" />
         </radialGradient>
         <radialGradient id="gn-dot" cx="0.35" cy="0.3" r="0.8">
-          <stop offset="0" stopColor="#FCD34D" />
-          <stop offset="0.6" stopColor="#F59E0B" />
-          <stop offset="1" stopColor="#B45309" />
+          <stop offset="0" stopColor="#FFFFFF" />
+          <stop offset="0.6" stopColor="#E4E8EE" />
+          <stop offset="1" stopColor="#A7B0BE" />
         </radialGradient>
         <linearGradient id="gn-capo" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="#111111" />
@@ -127,13 +127,13 @@ export function GuitarNeck({ shape, capo = 0, label }: { shape: Shape; capo?: nu
         const y = STRING_Y[i];
         if (f === null) {
           return (
-            <text key={i} x="22" y={y + 4} textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="700" fill="#F87171">
+            <text key={i} x="22" y={y + 4} textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="700" fill="#8A93A2">
               ×
             </text>
           );
         }
         if (f === capo) {
-          return <circle key={i} cx="20" cy={y} r="5" fill="none" stroke="#FBBF24" strokeWidth="1.8" />;
+          return <circle key={i} cx="20" cy={y} r="5" fill="none" stroke="#DDE2E8" strokeWidth="1.8" />;
         }
         const cx = (fretX(f - start - 1) + fretX(f - start)) / 2;
         return (
@@ -149,18 +149,18 @@ export function GuitarNeck({ shape, capo = 0, label }: { shape: Shape; capo?: nu
       })}
 
       {/* string names at numero ng fret */}
-      <g fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="700" fill="#A8A29E" textAnchor="middle">
+      <g fontFamily="JetBrains Mono, monospace" fontSize="10" fontWeight="700" fill="#8A93A2" textAnchor="middle">
         {STRING_Y.map((y, i) => (
           <text key={i} x="8" y={y + 3}>{STRING_NAMES[i]}</text>
         ))}
       </g>
-      <g fontFamily="Inter, sans-serif" fontSize="10" fill="#A8A29E" textAnchor="middle">
+      <g fontFamily="Inter, sans-serif" fontSize="10" fill="#8A93A2" textAnchor="middle">
         {FRET_WIDTHS.map((_, i) => (
           <text key={i} x={(fretX(i) + fretX(i + 1)) / 2} y="158">{start + i + 1}</text>
         ))}
       </g>
       {capo > 0 && (
-        <text x={NUT_X - 4} y="158" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="700" fill="#FBBF24" textAnchor="middle">CAPO</text>
+        <text x={NUT_X - 4} y="158" fontFamily="Inter, sans-serif" fontSize="9" fontWeight="700" fill="#FFFFFF" textAnchor="middle">CAPO</text>
       )}
     </svg>
   );

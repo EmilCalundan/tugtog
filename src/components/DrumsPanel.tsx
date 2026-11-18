@@ -5,20 +5,20 @@ import { DrumSounds } from "../lib/drumSounds";
 import { DrumKit } from "./DrumKit";
 
 const LANE_INFO: Record<Lane, { label: string; letter: string; color: string }> = {
-  crash: { label: "Crash", letter: "R", color: "text-orange-700 dark:text-orange-400" },
-  ride: { label: "Ride", letter: "R", color: "text-orange-700 dark:text-orange-400" },
-  hihat: { label: "Hi-hat", letter: "R", color: "text-orange-700 dark:text-orange-400" },
-  snare: { label: "Snare", letter: "L", color: "text-blue-700 dark:text-blue-400" },
-  kick: { label: "Kick", letter: "●", color: "text-green-700 dark:text-green-400" },
+  crash: { label: "Crash", letter: "R", color: "text-stone-50" },
+  ride: { label: "Ride", letter: "R", color: "text-stone-50" },
+  hihat: { label: "Hi-hat", letter: "R", color: "text-stone-50" },
+  snare: { label: "Snare", letter: "L", color: "text-stone-300" },
+  kick: { label: "Kick", letter: "●", color: "text-stone-400" },
 };
 const LANE_ORDER: Lane[] = ["crash", "ride", "hihat", "snare", "kick"];
 const KIND_TIPS: Record<Kind, string> = {
-  intro: "Intro: magaan muna. Hi-hat sa bawat beat at kick sa 1, walang snare.",
-  verse: "Verse: hi-hat ang kanang kamay, snare ang kaliwa, kick ang paa.",
-  prechorus: "Pre-chorus: parang verse, pero may dagdag na kick sa dulo papunta sa chorus.",
-  chorus: "Chorus: lumipat sa ride, at crash sa unang beat.",
-  bridge: "Bridge: crash pagpasok, ride, at kick sa bawat beat para may build-up.",
-  outro: "Outro: bumabagal ang pakiramdam. Hi-hat sa bawat beat at kick sa 1.",
+  intro: "Intro: keep it light. Hi-hat on every beat and kick on 1, no snare.",
+  verse: "Verse: right hand on hi-hat, left hand on snare, foot on kick.",
+  prechorus: "Pre-chorus: like the verse, with extra kicks at the end leading into the chorus.",
+  chorus: "Chorus: move to the ride, and crash on the first beat.",
+  bridge: "Bridge: crash coming in, ride, and kick on every beat to build up.",
+  outro: "Outro: the feel slows down. Hi-hat on every beat and kick on 1.",
 };
 
 // Ang Drums tab: groove para sa bawat bahagi ng kanta, may tunog at tempo
@@ -112,12 +112,12 @@ export function DrumsPanel({ text, initialStyle = "ballad", initialBpm = 72 }: {
   }
 
   const chip = (on: boolean) =>
-    `h-9 shrink-0 rounded-full px-3.5 text-sm ${on ? "bg-stone-900 font-semibold text-stone-50 dark:bg-stone-100 dark:text-stone-900" : "border border-stone-200 bg-white text-stone-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"}`;
+    `h-9 shrink-0 rounded-full px-3.5 text-sm ${on ? "knob font-semibold" : "border border-white/12 bg-white/[0.06] text-stone-300 hover:bg-white/10"}`;
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
-        <div role="radiogroup" aria-label="Style" className="-mx-5 flex gap-1.5 overflow-x-auto px-5 md:mx-0 md:px-0">
+        <div role="radiogroup" aria-label="Style" className="-mx-4 flex gap-1.5 overflow-x-auto px-4 md:mx-0 md:px-0">
           {STYLES.map((s) => (
             <button key={s.id} type="button" role="radio" aria-checked={style === s.id} onClick={() => setStyle(s.id)} className={chip(style === s.id)}>
               {s.label}
@@ -125,7 +125,7 @@ export function DrumsPanel({ text, initialStyle = "ballad", initialBpm = 72 }: {
           ))}
         </div>
         {sections.length > 0 && (
-          <div role="radiogroup" aria-label="Bahagi ng kanta" className="-mx-5 flex gap-1.5 overflow-x-auto px-5 md:mx-0 md:px-0">
+          <div role="radiogroup" aria-label="Song section" className="-mx-4 flex gap-1.5 overflow-x-auto px-4 md:mx-0 md:px-0">
             {sections.map((name) => (
               <button key={name} type="button" role="radio" aria-checked={section === name} onClick={() => setSection(name)} className={chip(section === name)}>
                 {name}
@@ -135,10 +135,10 @@ export function DrumsPanel({ text, initialStyle = "ballad", initialBpm = 72 }: {
         )}
       </div>
 
-      <section aria-label="Drum kit" className="relative rounded-2xl bg-[radial-gradient(120%_90%_at_50%_40%,#3A3330_0%,#1C1917_70%)] p-2.5 shadow-lg shadow-stone-900/20">
-        <div className="absolute top-2.5 right-2.5 z-10 rounded-xl bg-stone-900/85 px-2.5 py-1.5 text-right">
-          <div className="font-mono text-3xl leading-none font-bold text-amber-400 tabular-nums">{beat}</div>
-          <div className="text-[11px] text-stone-400">{g.steps === 16 ? "beat / 4" : "bilang / 6"}</div>
+      <section aria-label="Drum kit" className="glass relative rounded-[28px] p-3">
+        <div className="absolute top-3 right-3 z-10 rounded-2xl border border-white/10 bg-black/50 px-3 py-2 text-right backdrop-blur">
+          <div className="font-digit text-3xl leading-none text-stone-50 tabular-nums">{beat}</div>
+          <div className="mt-1 text-[11px] text-stone-400">{g.steps === 16 ? "beat / 4" : "count / 6"}</div>
         </div>
         <DrumKit hits={playing ? hits : new Set()} hand={g.lanes.ride ? "ride" : "hihat"} />
         <p className="px-1 text-xs text-stone-300">
@@ -146,18 +146,18 @@ export function DrumsPanel({ text, initialStyle = "ballad", initialBpm = 72 }: {
         </p>
       </section>
 
-      <section aria-label="Groove chart" className="overflow-x-auto rounded-2xl border border-stone-200 bg-white p-3 dark:border-stone-700 dark:bg-stone-900">
+      <section aria-label="Groove chart" className="glass overflow-x-auto rounded-[28px] p-4">
         <div className="grid min-w-[300px] items-center gap-0.5 text-center font-mono text-[10px]" style={{ gridTemplateColumns: `52px repeat(${g.steps}, minmax(0, 1fr))` }}>
           <div />
           {counts.map((c, i) => (
-            <div key={i} className={`rounded-sm ${c && !"e&a".includes(c) ? "font-bold" : "text-stone-400"} ${playing && i === current ? "bg-amber-200 dark:bg-amber-500/40" : ""}`}>
+            <div key={i} className={`rounded-sm ${c && !"e&a".includes(c) ? "font-bold text-stone-100" : "text-stone-500"} ${playing && i === current ? "bg-white/25" : ""}`}>
               {c || "·"}
             </div>
           ))}
           {lanes.map((l) => [
-            <div key={l} className="text-left font-sans text-[11px] text-stone-500">{LANE_INFO[l].label}</div>,
+            <div key={l} className="text-left font-sans text-[11px] text-stone-400">{LANE_INFO[l].label}</div>,
             ...g.lanes[l]!.map((v, i) => (
-              <div key={`${l}${i}`} className={`h-5 rounded-sm leading-5 font-bold ${LANE_INFO[l].color} ${playing && i === current ? "bg-amber-200 dark:bg-amber-500/40" : ""}`}>
+              <div key={`${l}${i}`} className={`h-5 rounded-sm leading-5 font-bold ${LANE_INFO[l].color} ${playing && i === current ? "bg-white/25" : ""}`}>
                 {v ? LANE_INFO[l].letter : ""}
               </div>
             )),
@@ -165,19 +165,19 @@ export function DrumsPanel({ text, initialStyle = "ballad", initialBpm = 72 }: {
         </div>
       </section>
 
-      <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white p-3 dark:border-stone-700 dark:bg-stone-900">
-        <button type="button" onClick={togglePlay} aria-label={playing ? "I-pause ang groove" : "Patugtugin ang groove"} className="flex size-12 shrink-0 items-center justify-center rounded-full bg-amber-500 text-stone-900">
+      <div className="glass flex items-center gap-3 rounded-full p-1.5 pr-2">
+        <button type="button" onClick={togglePlay} aria-label={playing ? "Pause the groove" : "Play the groove"} className="knob flex h-12 w-[68px] shrink-0 items-center justify-center rounded-full">
           {playing ? (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" /></svg>
           ) : (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5v14l12-7z" /></svg>
           )}
         </button>
-        <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-semibold text-stone-600 dark:text-stone-300">
-          <span>Tempo · <span className="font-mono">{bpm} BPM</span>{bpm < 72 && " (mabagal, para mag-aral)"}</span>
-          <input type="range" min={40} max={160} value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full accent-amber-500" />
+        <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-medium text-stone-300">
+          <span>Tempo · <span className="font-digit text-stone-50">{bpm}</span> BPM{bpm < 72 && " (slow, for practice)"}</span>
+          <input type="range" min={40} max={160} value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full accent-white" />
         </label>
-        <button type="button" onClick={tap} aria-label="Tap tempo: i-tap kasabay ng beat ng kanta" className="h-12 shrink-0 rounded-xl border border-stone-200 px-4 text-sm font-bold active:bg-amber-100 dark:border-stone-700 dark:active:bg-amber-500/20">
+        <button type="button" onClick={tap} aria-label="Tap tempo: tap along with the beat" className="h-11 shrink-0 rounded-full border border-white/15 px-4 text-sm font-semibold active:bg-white/25">
           Tap
         </button>
       </div>

@@ -6,7 +6,7 @@ import { BassNeck } from "./BassNeck";
 import type { BassDot } from "./BassNeck";
 
 function where(p: Position): string {
-  return p.fret === 0 ? `${p.string} bukas` : `${p.string} · fret ${p.fret}`;
+  return p.fret === 0 ? `${p.string} open` : `${p.string} · fret ${p.fret}`;
 }
 
 // Ang Bass tab: ang root (o slash bass) ng bawat chord, sa E at A string
@@ -21,7 +21,7 @@ export function BassPanel({ text, current }: { text: string; current?: string })
   const playingIndex = current ? steps.findIndex((s) => s.chord === current) : -1;
   const index = playingIndex >= 0 ? playingIndex : Math.min(selected, steps.length - 1);
 
-  if (steps.length === 0) return <p className="text-stone-500">Walang chords ang kantang ito.</p>;
+  if (steps.length === 0) return <p className="text-stone-400">This song has no chords.</p>;
 
   // Pagsamahin ang mga chord na pareho ang posisyon sa leeg
   const dots: BassDot[] = [];
@@ -40,12 +40,12 @@ export function BassPanel({ text, current }: { text: string; current?: string })
 
   return (
     <div className="flex flex-col gap-3">
-      <section aria-label="Leeg ng bass" className="rounded-2xl bg-stone-900 p-3 text-stone-50 shadow-lg shadow-stone-900/20 dark:bg-stone-950">
+      <section aria-label="Bass neck" className="glass rounded-[28px] p-4 text-stone-50">
         <div className="flex items-baseline justify-between px-1.5">
           <div>
-            <span className="font-mono text-2xl font-bold text-amber-400">{step.note}</span>
+            <span className="font-digit text-2xl text-stone-50">{step.note}</span>
             <span className="ml-2 text-sm text-stone-400">
-              para sa <strong className="font-mono text-stone-50">{step.chord}</strong> · {where(step.pos)}
+              for <strong className="font-mono text-stone-50">{step.chord}</strong> · {where(step.pos)}
             </span>
           </div>
           <span className="text-xs text-stone-400">{index + 1} / {steps.length}</span>
@@ -53,7 +53,7 @@ export function BassPanel({ text, current }: { text: string; current?: string })
         <div className="mt-2">
           <BassNeck dots={dots} label={`Bass line: ${description}`} />
         </div>
-        <p className="px-1.5 text-xs text-stone-400">Sundan ang mga numero: iyan ang pagkakasunod ng chords sa kanta.</p>
+        <p className="px-1.5 text-xs text-stone-400">Follow the numbers: that is the order of chords in the song.</p>
       </section>
 
       <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
@@ -63,19 +63,19 @@ export function BassPanel({ text, current }: { text: string; current?: string })
             type="button"
             onClick={() => setSelected(i)}
             aria-pressed={i === index}
-            className={`rounded-xl bg-white px-1 py-2 text-center dark:bg-stone-900 ${i === index ? "border-2 border-amber-500" : "border border-stone-200 dark:border-stone-700"}`}
+            className={`rounded-2xl px-1 py-2 text-center ${i === index ? "knob border border-white" : "border border-white/12 bg-white/[0.05] hover:bg-white/10"}`}
           >
-            <span className="block text-[11px] text-stone-500">{i + 1} · {s.chord}</span>
-            <span className={`block font-mono text-lg font-bold ${i === index ? "text-amber-700 dark:text-amber-400" : ""}`}>{s.note}</span>
-            <span className="block text-[11px] text-stone-500">{where(s.pos)}</span>
+            <span className={`block text-[11px] ${i === index ? "text-stone-600" : "text-stone-400"}`}>{i + 1} · {s.chord}</span>
+            <span className="block font-mono text-lg font-bold">{s.note}</span>
+            <span className={`block text-[11px] ${i === index ? "text-stone-600" : "text-stone-400"}`}>{where(s.pos)}</span>
           </button>
         ))}
       </div>
 
-      <section aria-label="Tab" className="rounded-2xl bg-stone-900 p-4 text-stone-50 dark:bg-stone-950">
+      <section aria-label="Tab" className="glass rounded-[28px] p-4 text-stone-50">
         <div className="flex justify-between text-xs">
-          <span className="font-bold tracking-widest text-amber-400 uppercase">Tab</span>
-          <span className="text-stone-400">2 beses bawat chord</span>
+          <span className="font-medium tracking-widest text-stone-300 uppercase">Tab</span>
+          <span className="text-stone-400">2 times per chord</span>
         </div>
         <pre className="mt-2 overflow-x-auto font-mono text-[13px] leading-relaxed text-stone-200">{bassTab(steps.map((s) => s.pos))}</pre>
       </section>

@@ -38,6 +38,24 @@ export function songBars(text: string, beatsPerBar: number): Bar[] {
   return bars;
 }
 
+// Ang susunod na chord pagkatapos ng tumutunog ngayon: sa parehong bar, o sa unang chord ng susunod na bar
+export function nextChord(bars: Bar[], barIndex: number, chord: string): string {
+  const bar = bars[barIndex];
+  if (!bar) return "";
+  const at = bar.chords.findIndex((c) => c.chord === chord);
+  if (at >= 0 && at < bar.chords.length - 1) return bar.chords[at + 1].chord;
+  const next = bars[barIndex + 1] ?? bars[0];
+  return next?.chords[0]?.chord ?? "";
+}
+
+// Ang unang bar ng "bintana" ng mga bar na ipinapakita sa arko (hal. 6 bawat pahina),
+// para laging puno ang arko kahit nasa dulo na ng kanta
+export function barWindow(total: number, current: number, size: number): number {
+  if (total <= size) return 0;
+  const start = Math.floor(current / size) * size;
+  return Math.min(start, total - size);
+}
+
 export type SectionRange = { name: string; start: number; end: number };
 
 // Ang mga bahagi ng kanta bilang hanay ng bar (start kasama, end hindi kasama).
@@ -51,7 +69,7 @@ export function sectionRanges(bars: Bar[]): SectionRange[] {
       last.end = i + 1;
       return;
     }
-    const base = bar.section || "Simula";
+    const base = bar.section || "Start";
     const count = (seen.get(base) ?? 0) + 1;
     seen.set(base, count);
     ranges.push({ name: count > 1 ? `${base} (${count})` : base, start: i, end: i + 1 });

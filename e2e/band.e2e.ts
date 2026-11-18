@@ -13,7 +13,7 @@ test("sumali sa banda gamit ang invite link", async ({ page }) => {
   await page.goto(`/sali/${CODE}`);
   await expect(page.getByRole("heading", { name: "Worship Team" })).toBeVisible();
   await page.getByText("Bass", { exact: true }).click();
-  await page.getByRole("button", { name: "Sumali sa Worship Team" }).click();
+  await page.getByRole("button", { name: "Join Worship Team" }).click();
 
   await expect(page).toHaveURL(/\/banda\/t1$/);
   const join = calls.find((c) => c.path.startsWith("/rest/v1/rpc/join_team"));
@@ -23,7 +23,7 @@ test("sumali sa banda gamit ang invite link", async ({ page }) => {
 test("hindi naka-login sa invite link: hinihinging mag-login muna", async ({ page }) => {
   await mockSupabase(page);
   await page.goto(`/sali/${CODE}`);
-  await expect(page.getByRole("heading", { name: "Mag-login para sumali" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Log in to join" })).toBeVisible();
 });
 
 test("setlist ng banda: read-only sa miyembro, at bumubukas ang kanta sa part niya", async ({ page }) => {
@@ -35,9 +35,9 @@ test("setlist ng banda: read-only sa miyembro, at bumubukas ang kanta sa part ni
   });
 
   await page.goto("/setlist/sl1");
-  await expect(page.getByText("bubukas sa Bass")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Burahin ang setlist" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Itaas" })).toHaveCount(0);
+  await expect(page.getByText("opens on Bass")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Delete setlist" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Move up" })).toHaveCount(0);
 
   await page.getByRole("link", { name: "Sa Liwanag Mo" }).click();
   await expect(page).toHaveURL(/\/kanta\/s1\?key=Bb&tab=bass$/);
@@ -48,7 +48,7 @@ test("kanta ng kabanda: walang Edit at + Setlist", async ({ page }) => {
   await mockSupabase(page, { songs: [{ ...SONG, owner_id: LEADER }] });
   await page.goto("/kanta/s1?key=Bb&tab=bass");
   await expect(page.getByRole("group", { name: "Key" })).toContainText("Bb");
-  await expect(page.getByRole("link", { name: "I-edit ang kanta" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Edit song" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "+ Setlist" })).toHaveCount(0);
 });
 
@@ -71,5 +71,5 @@ test("leader: nakikita ang invite link at ang mga miyembro", async ({ page }) =>
   });
   await page.goto("/banda/t1");
   await expect(page.getByText(`/sali/${CODE}`)).toBeVisible();
-  await expect(page.getByRole("button", { name: "Tanggalin" })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Remove" })).toHaveCount(1);
 });

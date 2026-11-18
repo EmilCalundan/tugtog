@@ -15,7 +15,7 @@ export function SharedSetlist({ shareId }: { shareId: string }) {
 
   useEffect(() => {
     supabase.rpc("get_shared_setlist", { p_share_id: shareId }).then(({ data, error }) => {
-      if (error) setError("Hindi mabuksan ang setlist. Baka mali ang link.");
+      if (error) setError("Could not open the setlist. The link may be wrong.");
       else setRows((data ?? []) as SharedRow[]);
     });
   }, [shareId]);
@@ -23,37 +23,35 @@ export function SharedSetlist({ shareId }: { shareId: string }) {
   const title = rows?.[0]?.setlist_title ?? "Setlist";
 
   return (
-    <div className="min-h-screen bg-stone-100 text-stone-900">
+    <div className="app-bg min-h-screen text-stone-100">
       <main className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-10">
         <header>
-          <a href="/" className="text-sm font-black tracking-tight">
-            Tugtog<span className="text-amber-500">.</span>
-          </a>
-          <h1 className="mt-2 text-3xl font-black tracking-tight">{title}</h1>
+          <a href="/" className="font-digit text-sm tracking-tight text-stone-300">TUGTOG</a>
+          <h1 className="mt-3 text-3xl font-medium tracking-tight">{title}</h1>
         </header>
 
-        {error && <p className="text-red-600">{error}</p>}
-        {rows === null && !error && <p className="text-stone-500">Kinukuha ang setlist…</p>}
-        {rows?.length === 0 && <p className="text-stone-500">Walang kanta sa setlist na ito, o mali ang link.</p>}
+        {error && <p className="text-red-400">{error}</p>}
+        {rows === null && !error && <p className="text-stone-400">Loading setlist…</p>}
+        {rows?.length === 0 && <p className="text-stone-400">This setlist has no songs, or the link is wrong.</p>}
 
         {rows && rows.length > 0 && (
           <>
             <button
               type="button"
               onClick={() => setStage(true)}
-              className="self-start rounded-lg bg-amber-500 px-4 py-2 font-bold text-stone-950 hover:bg-amber-400"
+              className="knob inline-flex h-12 items-center self-start rounded-full px-6 font-semibold"
             >
-              🎤 Stage mode, buong setlist
+              Live mode, whole setlist
             </button>
 
             <ol className="flex flex-col gap-4">
               {rows.map((song, i) => (
-                <li key={i} className="rounded-xl bg-white p-5">
-                  <h2 className="text-lg font-bold">
-                    {i + 1}. {song.title}
+                <li key={i} className="glass rounded-[28px] p-5">
+                  <h2 className="text-lg font-medium">
+                    <span className="font-digit text-sm text-stone-400">{String(i + 1).padStart(2, "0")}</span> {song.title}
                   </h2>
-                  <p className="text-sm text-stone-500">
-                    {song.artist && `${song.artist} · `}key ng <strong className="text-amber-600">{song.song_key}</strong>
+                  <p className="text-sm text-stone-400">
+                    {song.artist && `${song.artist} · `}key of <strong className="font-digit text-stone-50">{song.song_key}</strong>
                   </p>
                   <SongView text={songInKey(song)} className="mt-3 text-base" />
                 </li>

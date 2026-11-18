@@ -9,6 +9,6 @@ describe("setlist", () => {
   });
 
   it("pinagsasama ang mga kanta na may pamagat at key", () => {
-    expect(setlistText([song])).toBe("[1. Awit · key ng Bb]\nBb   Eb\nDahil sa Ama");
+    expect(setlistText([song])).toBe("[1. Awit · key of Bb]\nBb   Eb\nDahil sa Ama");
   });
 });

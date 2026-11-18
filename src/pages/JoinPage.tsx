@@ -27,26 +27,26 @@ export function JoinPage() {
   }, [session, code]);
 
   // Kailangang mag-login muna; babalik dito pagkatapos
-  if (session === undefined) return <div className={ui.page}><p className={ui.muted}>Sandali…</p></div>;
+  if (session === undefined) return <div className={ui.page}><p className={ui.muted}>One moment…</p></div>;
   if (session === null) {
     return (
       <div className={ui.page}>
         <div>
-          <p className={ui.eyebrow}>Imbitasyon sa banda</p>
-          <h1 className={`${ui.title} mt-1`}>Mag-login para sumali</h1>
-          <p className={`${ui.muted} mt-1`}>Gumawa ng account o mag-login, tapos pipili ka ng instrumento mo.</p>
+          <p className={ui.eyebrow}>Band invite</p>
+          <h1 className={`${ui.title} mt-1`}>Log in to join</h1>
+          <p className={`${ui.muted} mt-1`}>Create an account or log in, then pick your instrument.</p>
         </div>
         <Account startOpen />
       </div>
     );
   }
 
-  if (preview === undefined) return <div className={ui.page}><p className={ui.muted}>Hinahanap ang banda…</p></div>;
+  if (preview === undefined) return <div className={ui.page}><p className={ui.muted}>Looking for the band…</p></div>;
   if (preview === null) {
     return (
       <div className={ui.page}>
-        <h1 className={ui.title}>Hindi mahanap ang banda</h1>
-        <p className={ui.muted}>Baka luma na ang link. Humingi ng bagong invite link sa leader ng banda.</p>
+        <h1 className={ui.title}>Band not found</h1>
+        <p className={ui.muted}>The link may be old. Ask the band leader for a new invite link.</p>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export function JoinPage() {
       const teamId = await joinTeam(code, myName.trim(), instrument);
       navigate(`/banda/${teamId}`, { replace: true });
     } catch {
-      setMessage("Hindi nakasali. Subukan ulit, o humingi ng bagong link.");
+      setMessage("Could not join. Try again, or ask for a new link.");
       setBusy(false);
     }
   }
@@ -69,24 +69,24 @@ export function JoinPage() {
   return (
     <form onSubmit={handleJoin} className={ui.page}>
       <div>
-        <p className={ui.eyebrow}>Imbitasyon sa banda</p>
+        <p className={ui.eyebrow}>Band invite</p>
         <h1 className={`${ui.title} mt-1`}>{preview.name}</h1>
-        <p className={`${ui.muted} mt-1`}>{preview.member_count} miyembro na</p>
+        <p className={`${ui.muted} mt-1`}>{preview.member_count} {preview.member_count === 1 ? "member" : "members"} so far</p>
       </div>
 
-      <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
-        Pangalan mo sa banda
+      <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-300">
+        Your name in the band
         <input required maxLength={40} value={myName} onChange={(e) => setDisplayName(e.target.value)} className={`${ui.input} w-full`} />
       </label>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">Ano ang tinutugtog mo?</legend>
+        <legend className="mb-1.5 text-sm font-medium text-stone-300">What do you play?</legend>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {INSTRUMENTS.map((i) => (
             <label
               key={i.id}
-              className={`flex h-14 cursor-pointer items-center justify-center rounded-xl border font-semibold has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-amber-500 ${
-                instrument === i.id ? "border-2 border-amber-500 bg-amber-50 dark:bg-amber-500/10" : "border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900"
+              className={`flex h-14 cursor-pointer items-center justify-center rounded-full border font-medium has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-white ${
+                instrument === i.id ? "knob border-white" : "border-white/12 bg-white/[0.06] text-stone-200"
               }`}
             >
               <input type="radio" name="instrument" value={i.id} checked={instrument === i.id} onChange={() => setInstrument(i.id)} className="sr-only" />
@@ -96,10 +96,10 @@ export function JoinPage() {
         </div>
       </fieldset>
 
-      {message && <p className="text-sm font-semibold text-red-700 dark:text-red-400">{message}</p>}
+      {message && <p className="text-sm font-medium text-red-400">{message}</p>}
 
       <button type="submit" disabled={busy} className={ui.primary}>
-        {busy ? "Sandali…" : `Sumali sa ${preview.name}`}
+        {busy ? "One moment…" : `Join ${preview.name}`}
       </button>
     </form>
   );

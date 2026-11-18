@@ -4,9 +4,9 @@ import { supabase } from "../lib/supabase";
 import { useSession } from "../lib/useSession";
 import { ui } from "./ui";
 
-const CONFIRM_WORD = "BURAHIN";
+const CONFIRM_WORD = "DELETE";
 
-// Pagbura ng sariling account. Kailangang i-type ang BURAHIN, dahil hindi na ito maibabalik.
+// Pagbura ng sariling account. Kailangang i-type ang DELETE, dahil hindi na ito maibabalik.
 export function DeleteAccount() {
   const session = useSession();
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export function DeleteAccount() {
     const { error } = await supabase.rpc("delete_my_account");
     if (error) {
       setBusy(false);
-      setMessage("Hindi nabura ang account. Subukan ulit mamaya.");
+      setMessage("The account was not deleted. Try again later.");
       return;
     }
     // Wala na ang user sa server, kaya sa browser na lang aalisin ang session
@@ -33,37 +33,37 @@ export function DeleteAccount() {
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className="self-start text-sm font-semibold text-red-700 hover:underline dark:text-red-400">
-        Burahin ang account ko
+      <button type="button" onClick={() => setOpen(true)} className="self-start text-sm font-medium text-red-400 hover:underline">
+        Delete my account
       </button>
     );
   }
 
   return (
-    <section aria-labelledby="delete-title" className="flex flex-col gap-3 rounded-2xl border-2 border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
-      <h2 id="delete-title" className="font-display text-lg font-bold text-red-800 dark:text-red-300">Burahin ang account</h2>
-      <p className="text-sm text-red-900 dark:text-red-200">Hindi na ito maibabalik. Mabubura ang:</p>
-      <ul className="list-disc pl-5 text-sm text-red-900 dark:text-red-200">
-        <li>lahat ng kanta at setlist mo, pati ang mga share link nito</li>
-        <li>ang membership mo sa mga banda</li>
-        <li>ang mga bandang ikaw ang gumawa, kasama ang lahat ng miyembro nito</li>
+    <section aria-labelledby="delete-title" className="flex flex-col gap-3 rounded-[28px] border border-red-500/40 bg-red-500/10 p-5 backdrop-blur">
+      <h2 id="delete-title" className="font-display text-lg font-semibold text-red-300">Delete account</h2>
+      <p className="text-sm text-red-200">This cannot be undone. It deletes:</p>
+      <ul className="list-disc pl-5 text-sm text-red-200">
+        <li>all your songs and setlists, and their share links</li>
+        <li>your membership in bands</li>
+        <li>the bands you created, with all their members</li>
       </ul>
-      <label className="flex flex-col gap-1.5 text-sm font-semibold text-red-900 dark:text-red-200">
-        I-type ang {CONFIRM_WORD} para ituloy
+      <label className="flex flex-col gap-1.5 text-sm font-medium text-red-200">
+        Type {CONFIRM_WORD} to continue
         <input value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" className={`${ui.input} w-full font-mono`} />
       </label>
-      {message && <p role="alert" className="text-sm font-semibold text-red-700 dark:text-red-400">{message}</p>}
+      {message && <p role="alert" className="text-sm font-medium text-red-400">{message}</p>}
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={handleDelete}
           disabled={typed.trim() !== CONFIRM_WORD || busy}
-          className="inline-flex h-12 items-center justify-center rounded-xl bg-red-700 px-5 font-bold text-white hover:bg-red-600 disabled:opacity-40"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-red-600 px-6 font-semibold text-white hover:bg-red-500 disabled:opacity-40"
         >
-          {busy ? "Binubura…" : "Burahin nang tuluyan"}
+          {busy ? "Deleting…" : "Delete forever"}
         </button>
         <button type="button" onClick={() => { setOpen(false); setTyped(""); }} className={ui.secondary}>
-          Huwag na
+          Cancel
         </button>
       </div>
     </section>

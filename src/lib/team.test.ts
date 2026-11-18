@@ -21,8 +21,8 @@ describe("nameFromEmail", () => {
     expect(nameFromEmail("emil.calundan@gmail.com")).toBe("Emil.calundan");
   });
 
-  it("walang email: 'Miyembro'", () => {
-    expect(nameFromEmail(undefined)).toBe("Miyembro");
+  it("walang email: 'Member'", () => {
+    expect(nameFromEmail(undefined)).toBe("Member");
   });
 
   it("hindi lalampas sa 40 letra", () => {

@@ -1,17 +1,17 @@
-// Mga mensahe ng login at sign up sa Tagalog, mula sa error ng Supabase.
+// Mga mensahe ng login at sign up sa English, mula sa error ng Supabase.
 
 type AuthErrorLike = { code?: string; message?: string };
 
 const BY_CODE: Record<string, string> = {
-  invalid_credentials: "Mali ang email o password.",
-  email_not_confirmed: "Hindi pa na-confirm ang email mo. Buksan ang email na ipinadala namin at i-confirm muna.",
-  user_already_exists: "May account na ang email na ito. Mag-login na lang.",
-  email_exists: "May account na ang email na ito. Mag-login na lang.",
-  weak_password: "Masyadong maikli ang password. Gumamit ng hindi bababa sa 6 na letra o numero.",
-  over_email_send_rate_limit: "Masyadong maraming email ang naipadala. Maghintay nang ilang minuto at subukan ulit.",
-  over_request_rate_limit: "Masyadong maraming subok. Maghintay nang ilang minuto at subukan ulit.",
-  email_address_invalid: "Mukhang mali ang email. Pakitingnan ulit.",
-  same_password: "Kapareho ito ng dati mong password. Gumamit ng bago.",
+  invalid_credentials: "Wrong email or password.",
+  email_not_confirmed: "Your email is not confirmed yet. Open the email we sent and confirm it first.",
+  user_already_exists: "This email already has an account. Log in instead.",
+  email_exists: "This email already has an account. Log in instead.",
+  weak_password: "The password is too short. Use at least 6 letters or numbers.",
+  over_email_send_rate_limit: "Too many emails were sent. Wait a few minutes and try again.",
+  over_request_rate_limit: "Too many tries. Wait a few minutes and try again.",
+  email_address_invalid: "That email looks wrong. Please check it again.",
+  same_password: "This is the same as your old password. Use a new one.",
 };
 
 // Para sa mga lumang error na walang code
@@ -26,7 +26,7 @@ const BY_MESSAGE: [RegExp, string][] = [
 export function authErrorMessage(error: AuthErrorLike): string {
   if (error.code && BY_CODE[error.code]) return BY_CODE[error.code];
   const match = BY_MESSAGE.find(([pattern]) => pattern.test(error.message ?? ""));
-  return match ? BY_CODE[match[1]] : "May nagkaproblema. Subukan ulit mamaya.";
+  return match ? BY_CODE[match[1]] : "Something went wrong. Try again later.";
 }
 
 // Ano ang nangyari pagkatapos ng sign up?

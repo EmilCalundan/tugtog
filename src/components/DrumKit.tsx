@@ -28,7 +28,7 @@ export function DrumKit({ hits, hand }: { hits: Set<Lane>; hand: "hihat" | "ride
   const right = hits.has("crash") ? { x: 98, y: 72 } : hand === "ride" ? { x: 268, y: 78 } : { x: 58, y: 140 };
 
   return (
-    <svg viewBox="0 0 340 236" role="img" aria-label={`Drum kit mula sa itaas. Kanang kamay sa ${hand === "ride" ? "ride" : "hi-hat"}, kaliwang kamay sa snare, kanang paa sa kick.`} className="block h-auto w-full">
+    <svg viewBox="0 0 340 236" role="img" aria-label={`Drum kit from above. Right hand on the ${hand === "ride" ? "ride" : "hi-hat"}, left hand on the snare, right foot on the kick.`} className="block h-auto w-full">
       <defs>
         <radialGradient id="dk-cym" cx="0.45" cy="0.42" r="0.6">
           <stop offset="0" stopColor="#F6DB9A" />
@@ -67,7 +67,7 @@ export function DrumKit({ hits, hand }: { hits: Set<Lane>; hand: "hihat" | "ride
           <circle cx="5" cy="5.5" r="0.45" fill="#FFFFFF" fillOpacity="0.6" />
         </pattern>
         <radialGradient id="dk-glow" cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0.55" stopColor="#FBBF24" stopOpacity="0.8" />
+          <stop offset="0.55" stopColor="#FFFFFF" stopOpacity="0.75" />
           <stop offset="1" stopColor="#F59E0B" stopOpacity="0" />
         </radialGradient>
         <filter id="dk-shadow" x="-30%" y="-30%" width="160%" height="160%">
@@ -105,7 +105,7 @@ export function DrumKit({ hits, hand }: { hits: Set<Lane>; hand: "hihat" | "ride
       <g filter="url(#dk-shadow)">
         <circle cx="122" cy="168" r="37" fill="url(#dk-chrome)" />
         <circle cx="122" cy="168" r="33.5" fill="url(#dk-head)" />
-        {hits.has("snare") && <circle cx="122" cy="168" r="12" fill="#FCD34D" fillOpacity="0.45" />}
+        {hits.has("snare") && <circle cx="122" cy="168" r="12" fill="#FFFFFF" fillOpacity="0.45" />}
       </g>
 
       {/* cymbals */}
@@ -141,7 +141,7 @@ export function DrumKit({ hits, hand }: { hits: Set<Lane>; hand: "hihat" | "ride
 
       <Marker {...right} color="#C2410C" letter="R" on={rightOn} />
       <Marker x={112} y={166} color="#1D4ED8" letter="L" on={hits.has("snare")} />
-      <Marker x={189} y={188} color="#15803D" letter="P" on={hits.has("kick")} />
+      <Marker x={189} y={188} color="#15803D" letter="F" on={hits.has("kick")} />
     </svg>
   );
 }

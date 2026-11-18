@@ -17,16 +17,16 @@ export function TeamPage() {
   const [message, setMessage] = useState("");
 
   const reload = useCallback(
-    () => getTeam(id).then(setTeam).catch(() => setMessage("Hindi mahanap ang banda, o hindi ka na kasapi.")),
+    () => getTeam(id).then(setTeam).catch(() => setMessage("Band not found, or you are no longer a member.")),
     [id],
   );
 
   useEffect(() => {
-    getTeam(id).then(setTeam).catch(() => setMessage("Hindi mahanap ang banda, o hindi ka na kasapi."));
+    getTeam(id).then(setTeam).catch(() => setMessage("Band not found, or you are no longer a member."));
   }, [id]);
 
   if (session === null) return <Navigate to="/ako" replace />;
-  if (!team) return <div className={ui.page}><p className={ui.muted}>{message || "Kinukuha ang banda…"}</p></div>;
+  if (!team) return <div className={ui.page}><p className={ui.muted}>{message || "Loading band…"}</p></div>;
 
   const myId = session?.user.id ?? "";
   const me = team.team_members.find((m) => m.user_id === myId);
@@ -37,14 +37,14 @@ export function TeamPage() {
   async function copyInvite(url: string) {
     try {
       await navigator.clipboard.writeText(url);
-      setMessage("Nakopya ang invite link! I-send ito sa mga kabanda mo.");
+      setMessage("Invite link copied! Send it to your bandmates.");
     } catch {
-      setMessage(`Kopyahin ang link na ito: ${url}`);
+      setMessage(`Copy this link: ${url}`);
     }
   }
 
   async function resetInvite() {
-    if (!window.confirm("Gumawa ng bagong invite link? Hindi na gagana ang luma.")) return;
+    if (!window.confirm("Make a new invite link? The old one will stop working.")) return;
     const code = await newInviteCode(team!.id);
     await reload();
     copyInvite(inviteLink(window.location.origin, code));
@@ -56,19 +56,19 @@ export function TeamPage() {
   }
 
   async function kick(userId: string, name: string) {
-    if (!window.confirm(`Tanggalin si ${name} sa banda?`)) return;
+    if (!window.confirm(`Remove ${name} from the band?`)) return;
     await removeMember(team!.id, userId);
     reload();
   }
 
   async function leave() {
-    if (!window.confirm(`Umalis sa ${team!.name}? Hindi mo na makikita ang mga setlist ng banda.`)) return;
+    if (!window.confirm(`Leave ${team!.name}? You will no longer see the band's setlists.`)) return;
     await removeMember(team!.id, myId);
     navigate("/banda", { replace: true });
   }
 
   async function handleDelete() {
-    if (!window.confirm(`Burahin ang bandang "${team!.name}"? Mananatili ang mga setlist at kanta, pero hindi na ito nakabahagi.`)) return;
+    if (!window.confirm(`Delete the band "${team!.name}"? Setlists and songs stay, but they are no longer shared.`)) return;
     await deleteTeam(team!.id);
     navigate("/banda", { replace: true });
   }
@@ -77,37 +77,37 @@ export function TeamPage() {
 
   return (
     <div className={ui.page}>
-      <Link to="/banda" aria-label="Bumalik sa mga banda" className={`${ui.iconButton} -ml-3`}>
+      <Link to="/banda" aria-label="Back to bands" className={`${ui.iconButton} -ml-3`}>
         <BackIcon />
       </Link>
 
       <div>
-        <p className={ui.eyebrow}>Banda</p>
+        <p className={ui.eyebrow}>Band</p>
         <h1 className={`${ui.title} mt-1`}>{team.name}</h1>
-        <p className={`${ui.muted} mt-1`}>{team.team_members.length} miyembro</p>
+        <p className={`${ui.muted} mt-1`}>{team.team_members.length} {team.team_members.length === 1 ? "member" : "members"}</p>
       </div>
 
       {me && (
         <label className={`${ui.card} flex items-center justify-between gap-3 p-4`}>
           <span>
-            <span className="block font-semibold">Instrumento mo</span>
-            <span className={ui.muted}>Dito bubukas ang mga kanta sa setlist ng banda.</span>
+            <span className="block font-medium">Your instrument</span>
+            <span className={ui.muted}>Songs in the band's setlists open on this part.</span>
           </span>
-          <select value={me.instrument} onChange={(e) => changeInstrument(e.target.value as Instrument)} className={`${ui.input} w-32 shrink-0 font-semibold`}>
+          <select value={me.instrument} onChange={(e) => changeInstrument(e.target.value as Instrument)} className={`${ui.input} w-32 shrink-0`}>
             {INSTRUMENTS.map((i) => <option key={i.id} value={i.id}>{i.label}</option>)}
           </select>
         </label>
       )}
 
       <section aria-labelledby="setlists-title" className="flex flex-col gap-2">
-        <h2 id="setlists-title" className="font-display text-lg font-bold">Mga setlist ng banda</h2>
+        <h2 id="setlists-title" className={ui.label}>Band setlists</h2>
         {team.setlists.length === 0 ? (
-          <p className={ui.muted}>Wala pang setlist. Buksan ang isang setlist mo at piliin ang bandang ito sa "Ibahagi sa banda".</p>
+          <p className={ui.muted}>No setlists yet. Open one of your setlists and pick this band under "Share with band".</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {team.setlists.map((s) => (
               <li key={s.id}>
-                <Link to={`/setlist/${s.id}`} className={`${ui.card} flex items-center gap-3 p-4 hover:border-amber-500`}>
+                <Link to={`/setlist/${s.id}`} className={`${ui.card} flex items-center gap-3 p-4 pl-5 hover:border-white/30`}>
                   <span className="min-w-0 flex-1 truncate font-semibold">{s.title}</span>
                   <ChevronIcon className="text-stone-400" />
                 </Link>
@@ -118,17 +118,17 @@ export function TeamPage() {
       </section>
 
       <section aria-labelledby="members-title" className="flex flex-col gap-2">
-        <h2 id="members-title" className="font-display text-lg font-bold">Mga miyembro</h2>
-        <ul className={`${ui.card} divide-y divide-stone-200 dark:divide-stone-800`}>
+        <h2 id="members-title" className={ui.label}>Members</h2>
+        <ul className={`${ui.card} divide-y divide-white/10`}>
           {members.map((m) => (
             <li key={m.user_id} className="flex items-center gap-3 px-4 py-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 font-bold text-amber-800 dark:bg-amber-500/15 dark:text-amber-400">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-white/20 bg-gradient-to-br from-stone-600 to-stone-800 font-semibold text-stone-50">
                 {m.display_name.charAt(0).toUpperCase()}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">
                   {m.display_name}
-                  {m.user_id === myId && <span className="font-normal text-stone-500"> (ikaw)</span>}
+                  {m.user_id === myId && <span className="font-normal text-stone-400"> (you)</span>}
                 </span>
                 <span className={ui.muted}>
                   {instrumentLabel(m.instrument)}
@@ -136,8 +136,8 @@ export function TeamPage() {
                 </span>
               </span>
               {isLeader && m.user_id !== myId && m.user_id !== team.owner_id && (
-                <button type="button" onClick={() => kick(m.user_id, m.display_name)} className="text-sm font-semibold text-red-700 hover:underline dark:text-red-400">
-                  Tanggalin
+                <button type="button" onClick={() => kick(m.user_id, m.display_name)} className="text-sm font-medium text-red-400 hover:underline">
+                  Remove
                 </button>
               )}
             </li>
@@ -146,30 +146,30 @@ export function TeamPage() {
       </section>
 
       {isLeader && (
-        <section aria-labelledby="invite-title" className="flex flex-col gap-2 rounded-2xl bg-amber-50 p-4 dark:bg-amber-500/10">
-          <h2 id="invite-title" className="font-display text-lg font-bold">Mag-imbita</h2>
-          <p className="text-sm text-amber-900 dark:text-amber-200">
-            I-send ang link sa mga kabanda mo. Kailangan nilang mag-login, tapos pipili sila ng instrumento.
+        <section aria-labelledby="invite-title" className={`${ui.card} flex flex-col gap-3 p-5`}>
+          <h2 id="invite-title" className="font-display text-lg font-semibold">Invite</h2>
+          <p className="text-sm text-stone-300">
+            Send the link to your bandmates. They need to log in, then they pick their instrument.
           </p>
-          <code className="block overflow-x-auto rounded-lg bg-white px-3 py-2 font-mono text-xs whitespace-nowrap select-all dark:bg-stone-900">{link}</code>
+          <code className="block overflow-x-auto rounded-2xl bg-black/35 px-4 py-3 font-mono text-xs whitespace-nowrap text-stone-200 select-all">{link}</code>
           <div className="flex flex-wrap gap-2">
             <button type="button" onClick={() => copyInvite(link)} className={ui.primary}>
-              <LinkIcon /> Kopyahin ang link
+              <LinkIcon /> Copy link
             </button>
-            <button type="button" onClick={resetInvite} className={ui.secondary}>Bagong link</button>
+            <button type="button" onClick={resetInvite} className={ui.secondary}>New link</button>
           </div>
         </section>
       )}
 
-      {message && <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">{message}</p>}
+      {message && <p className="text-sm font-medium text-stone-100">{message}</p>}
 
       {isOwner ? (
-        <button type="button" onClick={handleDelete} className="self-start text-sm font-semibold text-red-700 hover:underline dark:text-red-400">
-          Burahin ang banda
+        <button type="button" onClick={handleDelete} className="self-start text-sm font-medium text-red-400 hover:underline">
+          Delete band
         </button>
       ) : (
-        <button type="button" onClick={leave} className="self-start text-sm font-semibold text-red-700 hover:underline dark:text-red-400">
-          Umalis sa banda
+        <button type="button" onClick={leave} className="self-start text-sm font-medium text-red-400 hover:underline">
+          Leave band
         </button>
       )}
     </div>

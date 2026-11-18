@@ -3,15 +3,16 @@ import type { FormEvent } from "react";
 import { supabase } from "../lib/supabase";
 import { useSession } from "../lib/useSession";
 import { authErrorMessage, signUpOutcome } from "../lib/authMessages";
+import { ui } from "./ui";
 
 type Mode = "login" | "signup" | "forgot" | "check-email" | "reset-sent";
 
 const TITLES: Record<Mode, string> = {
-  login: "Mag-login",
-  signup: "Gumawa ng account",
-  forgot: "Nakalimutan ang password",
-  "check-email": "Tingnan ang email mo",
-  "reset-sent": "Tingnan ang email mo",
+  login: "Log in",
+  signup: "Create an account",
+  forgot: "Forgot password",
+  "check-email": "Check your email",
+  "reset-sent": "Check your email",
 };
 
 export function Account({ startOpen = false }: { startOpen?: boolean }) {
@@ -53,7 +54,7 @@ export function Account({ startOpen = false }: { startOpen?: boolean }) {
         if (outcome === "check-email") switchTo("check-email");
         if (outcome === "already-registered") {
           switchTo("login");
-          setMessage("May account na ang email na ito. Mag-login na lang.");
+          setMessage("This email already has an account. Log in instead.");
         }
       }
     }
@@ -77,26 +78,25 @@ export function Account({ startOpen = false }: { startOpen?: boolean }) {
       options: { emailRedirectTo: window.location.href },
     });
     setBusy(false);
-    setMessage(error ? authErrorMessage(error) : "Naipadala ulit. Tingnan din ang Spam folder.");
+    setMessage(error ? authErrorMessage(error) : "Sent again. Check your Spam folder too.");
   }
 
-  const inputClass =
-    "rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-900 focus:outline-2 focus:outline-amber-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100";
-  const linkButton = "text-sm font-semibold text-stone-600 hover:underline dark:text-stone-400";
+  const inputClass = `${ui.input} w-full`;
+  const linkButton = "text-sm font-medium text-stone-300 hover:underline";
 
   // Naka-login na
   if (session) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-3 text-sm dark:bg-stone-900">
+      <div className={`${ui.card} flex items-center justify-between gap-3 px-5 py-4 text-sm`}>
         <span className="min-w-0 truncate">
-          Naka-login bilang <strong>{session.user.email}</strong>
+          Logged in as <strong>{session.user.email}</strong>
         </span>
         <button
           type="button"
           onClick={() => supabase.auth.signOut()}
-          className="shrink-0 font-semibold text-amber-600 hover:underline dark:text-amber-400"
+          className={`${ui.secondary} h-10 shrink-0`}
         >
-          Mag-logout
+          Log out
         </button>
       </div>
     );
@@ -108,9 +108,9 @@ export function Account({ startOpen = false }: { startOpen?: boolean }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="self-start rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-semibold hover:border-amber-500 dark:border-stone-700 dark:bg-stone-900"
+        className={`${ui.secondary} self-start`}
       >
-        Mag-login para i-save ang mga kanta mo
+        Log in to save your songs
       </button>
     );
   }
@@ -118,23 +118,23 @@ export function Account({ startOpen = false }: { startOpen?: boolean }) {
   // Naipadala na ang email: confirmation o reset ng password
   if (mode === "check-email" || mode === "reset-sent") {
     return (
-      <div role="status" className="flex flex-col gap-3 rounded-xl bg-white p-4 dark:bg-stone-900">
+      <div role="status" className={`${ui.card} flex flex-col gap-3 p-5`}>
         <h2 className="text-lg font-bold">{TITLES[mode]}</h2>
-        <p className="text-sm text-stone-700 dark:text-stone-300">
+        <p className="text-sm text-stone-300">
           {mode === "check-email"
-            ? <>Nagpadala kami ng link sa <strong>{email}</strong>. Buksan ito para ma-confirm ang account mo, at babalik ka rito.</>
-            : <>Nagpadala kami ng link sa <strong>{email}</strong> para makagawa ng bagong password.</>}
+            ? <>We sent a link to <strong>{email}</strong>. Open it to confirm your account, and you will come back here.</>
+            : <>We sent a link to <strong>{email}</strong> so you can set a new password.</>}
         </p>
-        <p className="text-sm text-stone-500">Wala pa? Tingnan ang Spam o Promotions folder.</p>
+        <p className="text-sm text-stone-400">Nothing yet? Check your Spam or Promotions folder.</p>
         {message && <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">{message}</p>}
         <div className="flex flex-wrap items-center gap-3">
           {mode === "check-email" && (
-            <button type="button" onClick={resend} disabled={busy} className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-semibold hover:border-amber-500 disabled:opacity-50 dark:border-stone-700">
-              Ipadala ulit
+            <button type="button" onClick={resend} disabled={busy} className={`${ui.secondary} h-10`}>
+              Send again
             </button>
           )}
           <button type="button" onClick={() => switchTo("login")} className={linkButton}>
-            Bumalik sa login
+            Back to log in
           </button>
         </div>
       </div>
@@ -143,13 +143,13 @@ export function Account({ startOpen = false }: { startOpen?: boolean }) {
 
   // Ang form
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-xl bg-white p-4 dark:bg-stone-900">
+    <form onSubmit={handleSubmit} className={`${ui.card} flex flex-col gap-4 p-5`}>
       <h2 className="text-lg font-bold">{TITLES[mode]}</h2>
       {mode === "forgot" && (
-        <p className="text-sm text-stone-600 dark:text-stone-400">Ilagay ang email mo at padadalhan ka namin ng link para gumawa ng bagong password.</p>
+        <p className="text-sm text-stone-300">Enter your email and we will send you a link to set a new password.</p>
       )}
 
-      <label className="flex flex-col gap-1 text-sm font-semibold text-stone-600 dark:text-stone-400">
+      <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
         Email
         <input
           type="email"
@@ -162,7 +162,7 @@ export function Account({ startOpen = false }: { startOpen?: boolean }) {
       </label>
 
       {mode !== "forgot" && (
-        <label className="flex flex-col gap-1 text-sm font-semibold text-stone-600 dark:text-stone-400">
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
           Password
           <input
             type="password"
@@ -176,28 +176,28 @@ export function Account({ startOpen = false }: { startOpen?: boolean }) {
         </label>
       )}
 
-      {message && <p role="alert" className="text-sm text-red-600 dark:text-red-400">{message}</p>}
+      {message && <p role="alert" className="text-sm text-red-400">{message}</p>}
 
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
           disabled={busy}
-          className="rounded-lg bg-amber-500 px-4 py-2 font-bold text-stone-950 hover:bg-amber-400 disabled:opacity-50"
+          className={ui.primary}
         >
-          {busy ? "Sandali..." : mode === "login" ? "Mag-login" : mode === "signup" ? "Gumawa ng account" : "Ipadala ang link"}
+          {busy ? "One moment..." : mode === "login" ? "Log in" : mode === "signup" ? "Create account" : "Send the link"}
         </button>
         {mode === "login" && (
           <>
-            <button type="button" onClick={() => switchTo("signup")} className={linkButton}>Wala pang account? Gumawa</button>
-            <button type="button" onClick={() => switchTo("forgot")} className={linkButton}>Nakalimutan ang password?</button>
+            <button type="button" onClick={() => switchTo("signup")} className={linkButton}>No account yet? Sign up</button>
+            <button type="button" onClick={() => switchTo("forgot")} className={linkButton}>Forgot password?</button>
           </>
         )}
         {mode !== "login" && (
-          <button type="button" onClick={() => switchTo("login")} className={linkButton}>May account na? Mag-login</button>
+          <button type="button" onClick={() => switchTo("login")} className={linkButton}>Have an account? Log in</button>
         )}
         {!startOpen && (
-          <button type="button" onClick={() => setOpen(false)} className="text-sm text-stone-500 hover:underline">
-            Isara
+          <button type="button" onClick={() => setOpen(false)} className="text-sm text-stone-400 hover:underline">
+            Close
           </button>
         )}
       </div>

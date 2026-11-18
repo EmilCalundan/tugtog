@@ -18,6 +18,6 @@ export function songInKey(song: SetlistSong): string {
 // Pagsamahin ang lahat ng kanta sa iisang text para sa Stage mode
 export function setlistText(songs: SetlistSong[]): string {
   return songs
-    .map((song, i) => `[${i + 1}. ${song.title} · key ng ${song.song_key}]\n${songInKey(song)}`)
+    .map((song, i) => `[${i + 1}. ${song.title} · key of ${song.song_key}]\n${songInKey(song)}`)
     .join("\n\n\n");
 }

@@ -16,16 +16,17 @@ import { PlayerBar } from "../components/PlayerBar";
 import { beatsPerBar, ensureBand, useSongPlayer } from "../lib/useSongPlayer";
 import type { Part } from "../lib/useSongPlayer";
 import type { BandSounds } from "../lib/bandSounds";
-import { sectionRanges, songBars } from "../music/timeline";
+import { barWindow, nextChord, sectionRanges, songBars } from "../music/timeline";
 import { drumStyle } from "../music/arrangement";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 import { ui } from "../components/ui";
-import { BackIcon, EditIcon, ExpandIcon } from "../components/Icons";
+import { BackIcon, EditIcon } from "../components/Icons";
+import { ArcHero } from "../components/ArcHero";
 
 const SIZES = ["text-sm", "text-base", "text-lg", "text-xl", "text-2xl"];
 const TABS = [
   { id: "chords", label: "Chords" },
-  { id: "gitara", label: "Gitara" },
+  { id: "gitara", label: "Guitar" },
   { id: "piano", label: "Piano" },
   { id: "bass", label: "Bass" },
   { id: "drums", label: "Drums" },
@@ -58,7 +59,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
       ? {
           id: "",
           owner_id: "",
-          title: "Subukan",
+          title: "Try it",
           artist: "",
           original_key: load("tugtog-from", "G"),
           content: load("tugtog-chords", SAMPLE),
@@ -102,32 +103,53 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   // Pag-eensayo ng isang bahagi: saan magsisimula, at kung uulitin
   const ranges = sectionRanges(bars);
   const [startIndex, setStartIndex] = useState(-1);
+  const [startBar, setStartBar] = useState<number | null>(null);
   const [loopOn, setLoopOn] = useState(false);
   const startRange = ranges[startIndex] ?? null;
-  const range = { from: startRange?.start ?? 0, loop: loopOn && startRange ? startRange : null };
+  const range = { from: startBar ?? startRange?.start ?? 0, loop: loopOn && startRange ? startRange : null };
   const parts = new Set<Part>(fullBand ? ["gitara", "piano", "bass", "drums"] : tab === "gitara" || tab === "piano" || tab === "bass" ? [tab] : []);
   const { bar, chord: playingChord } = useSongPlayer(bandSounds, bars, { bpm, style, time }, parts, playing, range);
   const current = playing && playingChord ? playingChord : undefined;
+  // Ang bar na ipinapakita: ang tumutunog, o kung saan magsisimula
+  const shownBar = Math.min(playing ? bar : range.from, Math.max(bars.length - 1, 0));
+  const shownChord = playing && playingChord ? playingChord : bars[shownBar]?.chords[0]?.chord ?? "";
+  const upNext = nextChord(bars, shownBar, shownChord);
 
   function togglePlay() {
     if (!playing && !ensureBand(bandSounds)) return;
     setPlaying(!playing);
   }
 
+  // Pindot sa isang bar sa arko: doon magsisimula (at doon lilipat kung tumutugtog na)
+  function startAtBar(i: number) {
+    const inRange = ranges.findIndex((r) => i >= r.start && i < r.end);
+    if (startIndex >= 0 && inRange !== startIndex) {
+      setStartIndex(-1);
+      setLoopOn(false);
+    }
+    setStartBar(i);
+  }
+
+  // Sa Live mode: kapag walang napiling instrumento (Chords o Drums tab), ang buong banda ang tutugtog
+  function toggleLive() {
+    if (!playing && parts.size === 0) setFullBand(true);
+    togglePlay();
+  }
+
   useEffect(() => {
     if (scratch || !id) return;
-    getSong(id).then(setSong).catch(() => setError("Hindi mahanap ang kantang ito."));
+    getSong(id).then(setSong).catch(() => setError("This song was not found."));
   }, [id, scratch]);
 
   if (error) {
     return (
       <div className={ui.page}>
         <p>{error}</p>
-        <Link to="/" className={ui.secondary}>Bumalik sa mga kanta</Link>
+        <Link to="/" className={ui.secondary}>Back to songs</Link>
       </div>
     );
   }
-  if (!song) return <div className={ui.page}><p className={ui.muted}>Kinukuha ang kanta…</p></div>;
+  if (!song) return <div className={ui.page}><p className={ui.muted}>Loading song…</p></div>;
 
   const key = toKey ?? song.original_key;
   const semitones = KEYS.indexOf(key) - KEYS.indexOf(song.original_key);
@@ -160,67 +182,72 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
     if (!song) return;
     try {
       await addToSetlist(setlist.id, song.id, key);
-      setMessage(`Naidagdag sa "${setlist.title}", key ng ${key}.`);
+      setMessage(`Added to "${setlist.title}" in the key of ${key}.`);
     } catch {
-      setMessage("Hindi naidagdag. Subukan ulit.");
+      setMessage("Not added. Try again.");
     }
     setSetlists(null);
   }
 
+  const playerTab = tab === "gitara" || tab === "piano" || tab === "bass";
+  const first = barWindow(bars.length, shownBar, 6);
+  const arcItems = bars.slice(first, first + 6).map((b, j) => {
+    const i = first + j;
+    return {
+      label: `BAR ${i + 1}`,
+      value: b.chords.map((c) => c.chord).join(" "),
+      active: i === shownBar,
+      ariaLabel: `Bar ${i + 1}: ${b.chords.map((c) => c.chord).join(" ")}${b.section ? `, ${b.section}` : ""}. Start here`,
+      onSelect: () => startAtBar(i),
+    };
+  });
+  const isOwner = !scratch && !!session && song.owner_id === session.user.id;
+
   return (
     <div className={ui.page}>
-      <header className="flex items-center gap-2">
-        <Link to="/" aria-label="Bumalik sa mga kanta" className={`${ui.iconButton} -ml-3`}>
+      <header className="flex items-center gap-2.5">
+        <Link to="/" aria-label="Back to songs" className={ui.iconButton}>
           <BackIcon />
         </Link>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-display text-2xl font-bold tracking-tight md:text-3xl">{song.title}</h1>
-          <p className={ui.muted}>
-            {song.artist ? `${song.artist} · ` : ""}orihinal na key {song.original_key}
+          <p className="truncate text-[11px] font-medium tracking-[0.12em] text-stone-400 uppercase">
+            Key {key}{key !== song.original_key ? ` · original ${song.original_key}` : ""}{song.artist ? ` · ${song.artist}` : ""}
           </p>
+          <h1 className="line-clamp-2 text-xl leading-tight font-medium md:text-2xl">{song.title}</h1>
         </div>
-        {!scratch && song.owner_id === session?.user.id && (
-          <Link to={`/kanta/${song.id}/edit`} aria-label="I-edit ang kanta" className={ui.iconButton}>
-            <EditIcon />
-          </Link>
-        )}
+        <div role="group" aria-label="Mode" className="glass flex shrink-0 rounded-full p-1">
+          <span aria-current="page" className="knob rounded-full px-3.5 py-1.5 text-xs font-semibold">Practice</span>
+          <button type="button" onClick={() => setStage(true)} className="rounded-full px-3.5 py-1.5 text-xs font-medium text-stone-300 hover:text-stone-50">
+            Live
+          </button>
+        </div>
       </header>
 
       {/* Mga kontrol: key, capo, numbers */}
-      <div className="-mx-5 flex items-center gap-2 overflow-x-auto px-5 md:mx-0 md:px-0">
-        <div role="group" aria-label="Key" className="flex h-12 shrink-0 items-center rounded-xl border border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900">
-          <button type="button" onClick={() => step(-1)} aria-label="Ibaba ang key" className="h-12 w-12 text-xl">−</button>
-          <span className="min-w-14 text-center leading-tight">
-            <span className="block text-[10px] font-semibold tracking-widest text-stone-500 uppercase">Key</span>
-            <span className="font-mono text-lg font-bold text-amber-700 dark:text-amber-400">{key}</span>
+      <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
+        <div role="group" aria-label="Key" className="glass flex h-11 shrink-0 items-center rounded-full">
+          <button type="button" onClick={() => step(-1)} aria-label="Lower the key" className="h-11 w-11 text-xl text-stone-300">−</button>
+          <span className="min-w-12 text-center leading-none">
+            <span className="block text-[9px] font-medium tracking-[0.14em] text-stone-400 uppercase">Key</span>
+            <span className="font-digit text-sm text-stone-50">{key}</span>
           </span>
-          <button type="button" onClick={() => step(1)} aria-label="Itaas ang key" className="h-12 w-12 text-xl">+</button>
+          <button type="button" onClick={() => step(1)} aria-label="Raise the key" className="h-11 w-11 text-xl text-stone-300">+</button>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowCapo(!showCapo)}
-          aria-pressed={showCapo}
-          className={`${ui.chip} ${showCapo ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : ""}`}
-        >
-          {capo.capo === 0 ? "Walang capo" : `Capo ${capo.capo} · ${capo.shape}`}
+        <button type="button" onClick={() => setShowCapo(!showCapo)} aria-pressed={showCapo} className={ui.chip}>
+          {capo.capo === 0 ? "No capo" : `Capo ${capo.capo} · ${capo.shape}`}
         </button>
-        <button
-          type="button"
-          onClick={() => setNumbers(!numbers)}
-          aria-pressed={numbers}
-          className={`${ui.chip} ${numbers ? "border-amber-500 bg-amber-50 dark:bg-amber-500/10" : ""}`}
-        >
+        <button type="button" onClick={() => setNumbers(!numbers)} aria-pressed={numbers} className={ui.chip}>
           1 2 3
         </button>
         {toKey && toKey !== song.original_key && (
-          <button type="button" onClick={() => setToKey(null)} className="shrink-0 whitespace-nowrap text-sm font-semibold text-amber-700 hover:underline dark:text-amber-400">
-            Ibalik sa {song.original_key}
+          <button type="button" onClick={() => setToKey(null)} className="shrink-0 whitespace-nowrap px-2 text-sm font-medium text-stone-200 underline-offset-4 hover:underline">
+            Back to {song.original_key}
           </button>
         )}
       </div>
 
       {/* Mga instrumento */}
-      <nav aria-label="Instrumento" className="flex gap-1 overflow-x-auto border-b border-stone-200 dark:border-stone-800">
+      <nav aria-label="Instrument" className="glass -mx-1 flex gap-1 overflow-x-auto rounded-full p-1">
         {TABS.map(({ id, label }) => (
           <button
             key={id}
@@ -230,7 +257,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
               if (id === "chords" || id === "drums") setPlaying(false);
             }}
             aria-current={tab === id ? "page" : undefined}
-            className={`px-3 pt-2 pb-3 ${tab === id ? "border-b-2 border-amber-500 font-semibold" : "text-stone-500 hover:text-stone-900 dark:hover:text-stone-100"}`}
+            className={`h-9 flex-1 shrink-0 rounded-full px-3 text-sm ${tab === id ? "knob font-semibold" : "font-medium text-stone-300 hover:text-stone-50"}`}
           >
             {label}
           </button>
@@ -238,20 +265,20 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
       </nav>
 
       {tab === "chords" && showCapo && capo.capo > 0 && (
-        <div className="rounded-2xl bg-amber-50 p-4 dark:bg-amber-500/10">
-          <p className="font-semibold">Capo {capo.capo}, gamitin ang {capo.shape} shapes:</p>
+        <div className={`${ui.card} p-5`}>
+          <p className="font-medium">Capo {capo.capo}, play the {capo.shape} shapes:</p>
           <SongView text={shapeText} className="mt-2 text-sm" />
         </div>
       )}
 
       {scratch && (
         <div className="flex flex-col gap-2">
-          <label className="flex items-center gap-2 text-sm font-semibold text-stone-600 dark:text-stone-300">
-            Orihinal na key
+          <label className="flex flex-wrap items-center gap-2 text-sm font-medium text-stone-300">
+            Original key
             <select
               value={song.original_key}
               onChange={(e) => updateScratch({ original_key: e.target.value })}
-              className="h-10 rounded-lg border border-stone-200 bg-white px-2 font-mono font-bold dark:border-stone-700 dark:bg-stone-900"
+              className={`${ui.input} h-10 w-20 font-digit text-sm`}
             >
               {KEYS.map((k) => <option key={k}>{k}</option>)}
             </select>
@@ -259,23 +286,31 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
               aria-label="Time signature"
               value={song.time_signature}
               onChange={(e) => updateScratch({ time_signature: e.target.value as TimeSignature })}
-              className="h-10 rounded-lg border border-stone-200 bg-white px-2 font-mono font-bold dark:border-stone-700 dark:bg-stone-900"
+              className={`${ui.input} h-10 w-20 font-digit text-sm`}
             >
               <option>4/4</option>
               <option>6/8</option>
             </select>
           </label>
           <textarea
-            aria-label="Chords at lyrics"
+            aria-label="Chords and lyrics"
             rows={6}
             value={song.content}
             onChange={(e) => updateScratch({ content: e.target.value })}
-            className="rounded-xl border border-stone-200 bg-white p-3 font-mono text-sm dark:border-stone-700 dark:bg-stone-900"
+            className="glass rounded-[24px] p-4 font-mono text-sm text-stone-100 focus:outline-none"
           />
         </div>
       )}
 
-      {(tab === "gitara" || tab === "piano" || tab === "bass") && (
+      {playerTab && bars.length > 0 && (
+        <ArcHero items={arcItems} title="Bars of the song. Tap a bar to start there." height={272} centerY={92} guitar={null}>
+          <span className="text-[11px] font-medium tracking-[0.2em] text-stone-400">{playing ? "NOW" : "START"}</span>
+          <span className="mt-1 font-digit text-[40px] leading-tight text-stone-50 [text-shadow:0_0_24px_rgba(255,255,255,.25)]">{shownChord || "—"}</span>
+          {upNext && <span className="mt-1 text-xs text-stone-400">next <span className="font-digit text-stone-200">{upNext}</span></span>}
+        </ArcHero>
+      )}
+
+      {playerTab && (
         <PlayerBar
           playing={playing}
           onToggle={togglePlay}
@@ -286,14 +321,17 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           bars={bars}
           bar={bar}
           chord={playingChord}
+          next={playing ? upNext : shownChord}
           instrument={TABS.find((t) => t.id === tab)!.label.toLowerCase()}
           style={style}
           onStyle={setStyle}
           time={time}
           ranges={ranges}
           start={startIndex}
+          startBar={startBar}
           onStart={(i) => {
             setStartIndex(i);
+            setStartBar(null);
             if (i < 0) setLoopOn(false);
           }}
           loop={loopOn}
@@ -315,14 +353,14 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
         </article>
       )}
 
-      {message && <p className="text-sm font-semibold text-amber-800 dark:text-amber-400">{message}</p>}
+      {message && <p className="text-sm font-medium text-stone-100">{message}</p>}
 
       {setlists && (
         <div className={`${ui.card} flex flex-col gap-2 p-4`}>
-          <p className="font-semibold">Idagdag sa setlist, key ng {key}:</p>
+          <p className="font-medium">Add to a setlist, key of {key}:</p>
           {setlists.length === 0 ? (
             <p className={ui.muted}>
-              Wala ka pang setlist. <Link to="/setlist" className="font-semibold text-amber-700 underline">Gumawa ng isa</Link>
+              No setlists yet. <Link to="/setlist" className="font-medium text-stone-100 underline">Make one</Link>
             </p>
           ) : (
             setlists.map((sl) => (
@@ -334,26 +372,47 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
         </div>
       )}
 
-      {/* Mga kontrol sa pagtugtog, abot ng hinlalaki */}
-      <div className="sticky bottom-24 z-20 flex items-center gap-2 rounded-2xl border border-stone-200 bg-white/95 p-2 shadow-lg shadow-stone-900/10 backdrop-blur md:bottom-6 dark:border-stone-700 dark:bg-stone-900/95">
-        <button type="button" onClick={() => setSize(Math.max(0, size - 1))} disabled={size === 0} aria-label="Paliitin ang text" className={ui.iconButton}>
-          <span className="text-sm font-bold">A−</span>
-        </button>
-        <button type="button" onClick={() => setSize(Math.min(SIZES.length - 1, size + 1))} disabled={size === SIZES.length - 1} aria-label="Palakihin ang text" className={ui.iconButton}>
-          <span className="text-lg font-bold">A+</span>
-        </button>
-        <span className="flex-1" />
-        {!scratch && session && song.owner_id === session.user.id && (
-          <button type="button" onClick={openSetlists} className={`${ui.secondary} h-11 whitespace-nowrap px-3`}>
-            + Setlist
+      {/* Mga kontrol na abot ng hinlalaki (sa Chords tab lang; may sariling console ang player at drums) */}
+      {tab === "chords" && (
+        <div className="glass sticky bottom-[92px] z-20 flex items-center gap-1.5 rounded-full p-1.5 md:bottom-6">
+          <button type="button" onClick={() => setSize(Math.max(0, size - 1))} disabled={size === 0} aria-label="Smaller text" className={`${ui.iconButton} border-0 bg-transparent`}>
+            <span className="text-sm font-semibold">A−</span>
           </button>
-        )}
-        <button type="button" onClick={() => setStage(true)} className={`${ui.primary} h-11 px-4`}>
-          <ExpandIcon /> Stage
-        </button>
-      </div>
+          <button type="button" onClick={() => setSize(Math.min(SIZES.length - 1, size + 1))} disabled={size === SIZES.length - 1} aria-label="Bigger text" className={`${ui.iconButton} border-0 bg-transparent`}>
+            <span className="text-base font-semibold">A+</span>
+          </button>
+          <span className="flex-1" />
+          {isOwner && (
+            <Link to={`/kanta/${song.id}/edit`} aria-label="Edit song" className={`${ui.iconButton} border-0 bg-transparent`}>
+              <EditIcon />
+            </Link>
+          )}
+          {isOwner && (
+            <button type="button" onClick={openSetlists} className={`${ui.secondary} h-11 whitespace-nowrap px-4`}>
+              + Setlist
+            </button>
+          )}
+          <button type="button" onClick={() => setStage(true)} className={`${ui.primary} h-11 whitespace-nowrap px-5`}>
+            Live mode
+          </button>
+        </div>
+      )}
 
-      {stage && <StageMode text={text} title={`${song.title} · ${key}`} onClose={() => setStage(false)} />}
+      {stage && (
+        <StageMode
+          text={text}
+          title={song.title}
+          subtitle={`Key ${key} · ${bpm} BPM`}
+          player={{
+            playing,
+            chord: shownChord,
+            next: upNext,
+            status: `${bars[shownBar]?.section ? `${bars[shownBar].section} · ` : ""}Bar ${shownBar + 1} of ${bars.length}`,
+            onToggle: toggleLive,
+          }}
+          onClose={() => setStage(false)}
+        />
+      )}
     </div>
   );
 }

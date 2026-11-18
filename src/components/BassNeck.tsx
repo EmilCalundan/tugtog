@@ -37,7 +37,7 @@ export function BassNeck({ dots, label }: { dots: BassDot[]; label: string }) {
         </linearGradient>
         <linearGradient id="bn-string" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#F5F5F4" />
-          <stop offset="0.5" stopColor="#A8A29E" />
+          <stop offset="0.5" stopColor="#8A93A2" />
           <stop offset="1" stopColor="#57534E" />
         </linearGradient>
         <radialGradient id="bn-pearl" cx="0.35" cy="0.35" r="0.8">
@@ -46,9 +46,9 @@ export function BassNeck({ dots, label }: { dots: BassDot[]; label: string }) {
           <stop offset="1" stopColor="#B9C8D4" />
         </radialGradient>
         <radialGradient id="bn-dot" cx="0.35" cy="0.3" r="0.8">
-          <stop offset="0" stopColor="#FCD34D" />
-          <stop offset="0.6" stopColor="#F59E0B" />
-          <stop offset="1" stopColor="#B45309" />
+          <stop offset="0" stopColor="#FFFFFF" />
+          <stop offset="0.6" stopColor="#E4E8EE" />
+          <stop offset="1" stopColor="#A7B0BE" />
         </radialGradient>
         <radialGradient id="bn-dim" cx="0.35" cy="0.3" r="0.8">
           <stop offset="0" stopColor="#78716C" />
@@ -78,18 +78,18 @@ export function BassNeck({ dots, label }: { dots: BassDot[]; label: string }) {
           <path d={`M${NUT_X - 6} ${STRING_Y[s] + 3}H${end}`} stroke="#000" strokeOpacity="0.35" strokeWidth={STRING_WIDTH[s]} />
           <path d={`M${NUT_X - 6} ${STRING_Y[s]}H${end}`} stroke="url(#bn-string)" strokeWidth={STRING_WIDTH[s]} />
           <path d={`M${NUT_X - 6} ${STRING_Y[s]}H${end}`} stroke="#44403C" strokeOpacity="0.5" strokeDasharray="1 1.4" strokeWidth={STRING_WIDTH[s]} />
-          <text x="5" y={STRING_Y[s] + 4} fontFamily="JetBrains Mono, monospace" fontSize="11" fontWeight="700" fill="#A8A29E" textAnchor="middle">{s}</text>
+          <text x="5" y={STRING_Y[s] + 4} fontFamily="JetBrains Mono, monospace" fontSize="11" fontWeight="700" fill="#8A93A2" textAnchor="middle">{s}</text>
         </g>
       ))}
 
-      {/* mga nota ng kanta; ang aktibo ay amber */}
+      {/* mga nota ng kanta; ang aktibo ay puti */}
       {[...dots].sort((a, b) => Number(a.active) - Number(b.active)).map((d) => {
         const cx = d.fret === 0 ? 22 : (fretX(d.fret - 1) + fretX(d.fret)) / 2;
         const y = STRING_Y[d.string];
         const text = d.labels.join("·");
         return (
           <g key={`${d.string}${d.fret}`} filter="url(#bn-shadow)">
-            <rect x={cx - Math.max(11, text.length * 4 + 4)} y={y - 11} width={Math.max(22, text.length * 8 + 8)} height="22" rx="11" fill={d.active ? "url(#bn-dot)" : "url(#bn-dim)"} stroke={d.active ? "none" : "#A8A29E"} strokeWidth="1" />
+            <rect x={cx - Math.max(11, text.length * 4 + 4)} y={y - 11} width={Math.max(22, text.length * 8 + 8)} height="22" rx="11" fill={d.active ? "url(#bn-dot)" : "url(#bn-dim)"} stroke={d.active ? "none" : "#8A93A2"} strokeWidth="1" />
             <text x={cx} y={y + 4} textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize="12" fontWeight="700" fill={d.active ? "#1C1917" : "#F5F5F4"}>
               {text}
             </text>
@@ -97,7 +97,7 @@ export function BassNeck({ dots, label }: { dots: BassDot[]; label: string }) {
         );
       })}
 
-      <g fontFamily="Inter, sans-serif" fontSize="10" fill="#A8A29E" textAnchor="middle">
+      <g fontFamily="Inter, sans-serif" fontSize="10" fill="#8A93A2" textAnchor="middle">
         {FRET_WIDTHS.map((_, i) => (
           <text key={i} x={(fretX(i) + fretX(i + 1)) / 2} y="138">{i + 1}</text>
         ))}

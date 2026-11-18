@@ -29,23 +29,23 @@ export function SetlistsPage() {
 
   return (
     <div className={ui.page}>
-      <h1 className={ui.title}>Setlist</h1>
+      <h1 className={ui.title}>Setlists</h1>
 
       <form onSubmit={handleCreate} className="flex gap-2">
-        <label className="sr-only" htmlFor="new-setlist">Pangalan ng bagong setlist</label>
-        <input id="new-setlist" placeholder="hal. Linggo, Nob 23" value={title} onChange={(e) => setTitle(e.target.value)} className={`${ui.input} w-full`} />
-        <button type="submit" className={ui.primary}>Gumawa</button>
+        <label className="sr-only" htmlFor="new-setlist">Name of the new setlist</label>
+        <input id="new-setlist" placeholder="e.g. Sunday, Nov 23" value={title} onChange={(e) => setTitle(e.target.value)} className={`${ui.input} w-full`} />
+        <button type="submit" className={ui.primary}>Create</button>
       </form>
 
       {setlists === null ? (
-        <p className={ui.muted}>Kinukuha ang mga setlist…</p>
+        <p className={ui.muted}>Loading setlists…</p>
       ) : setlists.length === 0 ? (
-        <p className={ui.muted}>Wala ka pang setlist. Gumawa ng isa para sa susunod na gig o Linggo.</p>
+        <p className={ui.muted}>No setlists yet. Make one for your next gig or Sunday.</p>
       ) : (
         <ul className="flex flex-col gap-2">
           {setlists.map((setlist) => (
             <li key={setlist.id}>
-              <Link to={`/setlist/${setlist.id}`} className={`${ui.card} flex items-center gap-3 p-4 hover:border-amber-500`}>
+              <Link to={`/setlist/${setlist.id}`} className={`${ui.card} flex items-center gap-3 p-4 pl-5 hover:border-white/30`}>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{setlist.title}</span>
                   {setlist.teams && <span className={ui.muted}>{setlist.teams.name}</span>}

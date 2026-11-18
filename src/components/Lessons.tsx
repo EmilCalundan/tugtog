@@ -18,14 +18,14 @@ import { ui } from "./ui";
 
 const chipClass = (on: boolean) =>
   `h-10 shrink-0 rounded-full px-4 font-mono text-sm font-bold ${
-    on ? "bg-stone-900 text-stone-50 dark:bg-stone-100 dark:text-stone-900" : "border border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900"
+    on ? "knob" : "border border-white/12 bg-white/[0.06] text-stone-200 hover:bg-white/10"
   }`;
-const darkCard = "rounded-2xl bg-stone-900 p-3 text-stone-50 shadow-lg shadow-stone-900/20 dark:bg-stone-950";
-const sectionTitle = "font-display text-xl font-bold";
+const darkCard = "glass rounded-[28px] p-4 text-stone-50";
+const sectionTitle = "font-display text-xl font-medium";
 
 function PlayButton({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <button type="button" onClick={onClick} className="inline-flex h-11 items-center gap-2 rounded-full bg-amber-500 px-4 font-bold text-stone-900 hover:bg-amber-400">
+    <button type="button" onClick={onClick} className="knob inline-flex h-11 items-center gap-2 rounded-full px-5 font-semibold">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5v14l12-7z" /></svg>
       {label}
     </button>
@@ -34,7 +34,7 @@ function PlayButton({ onClick, label }: { onClick: () => void; label: string }) 
 
 function Chips<T extends string>({ items, value, onChange, label, render }: { items: readonly T[]; value: string; onChange: (v: T) => void; label: string; render?: (v: T) => string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="-mx-5 flex gap-1.5 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
+    <div role="radiogroup" aria-label={label} className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0">
       {items.map((item) => (
         <button key={item} type="button" role="radio" aria-checked={value === item} onClick={() => onChange(item)} className={chipClass(value === item)}>
           {render ? render(item) : item}
@@ -62,11 +62,11 @@ export function BasicsLesson() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <h2 className={sectionTitle}>Paano basahin ang isang chord</h2>
-        <p className="text-stone-600 dark:text-stone-300">
-          Ang unang letra ang <strong>root</strong>, ang pangunahing nota. Ang kasunod ang <strong>uri</strong> ng chord. Kapag may <code>/</code>, ang nasa likod nito ang pinakamababang nota (bass).
+        <h2 className={sectionTitle}>How to read a chord</h2>
+        <p className="text-stone-300">
+          The first letter is the <strong>root</strong>, the main note. What follows is the chord <strong>type</strong>. When there is a <code>/</code>, the note after it is the lowest note (the bass).
         </p>
-        <Chips items={examples} value={chord} onChange={setChord} label="Halimbawang chord" />
+        <Chips items={examples} value={chord} onChange={setChord} label="Example chord" />
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -74,63 +74,63 @@ export function BasicsLesson() {
           }}
           className="flex gap-2"
         >
-          <label className="sr-only" htmlFor="chord-input">Mag-type ng chord</label>
-          <input id="chord-input" placeholder="O mag-type, hal. F#m7" value={typed} onChange={(event) => setTyped(event.target.value)} className={`${ui.input} w-full font-mono`} />
-          <button type="submit" className={ui.secondary}>Ipaliwanag</button>
+          <label className="sr-only" htmlFor="chord-input">Type a chord</label>
+          <input id="chord-input" placeholder="Or type one, e.g. F#m7" value={typed} onChange={(event) => setTyped(event.target.value)} className={`${ui.input} w-full font-mono`} />
+          <button type="submit" className={ui.secondary}>Explain</button>
         </form>
-        {typed.trim() && !explainChord(typed.trim()) && <p className="text-sm text-red-700 dark:text-red-400">Hindi ito kilalang chord. Subukan ang hal. Am, D7 o Cmaj7.</p>}
+        {typed.trim() && !explainChord(typed.trim()) && <p className="text-sm text-red-400">That is not a chord we know. Try Am, D7 or Cmaj7.</p>}
 
         {e && (
           <div className={darkCard}>
             <div className="flex flex-wrap items-baseline gap-x-3 px-1.5">
-              <span className="font-mono text-3xl font-bold text-amber-400">{chord}</span>
-              <span className="text-stone-300">{e.root} {e.name}{e.bass && `, bass sa ${e.bass}`}</span>
+              <span className="font-digit text-3xl text-stone-50">{chord}</span>
+              <span className="text-stone-300">{e.root} {e.name}{e.bass && `, bass on ${e.bass}`}</span>
             </div>
             <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 px-1.5 text-sm">
               <dt className="text-stone-400">Formula</dt><dd className="font-mono">{e.formula}</dd>
-              <dt className="text-stone-400">Mga nota</dt><dd className="font-mono">{e.tones.join(" – ")}</dd>
-              <dt className="text-stone-400">Tunog</dt><dd>{e.feel}</dd>
+              <dt className="text-stone-400">Notes</dt><dd className="font-mono">{e.tones.join(" – ")}</dd>
+              <dt className="text-stone-400">Sound</dt><dd>{e.feel}</dd>
             </dl>
             <div className="mt-3 overflow-hidden rounded-lg">
               <PianoKeyboard left={v.left} right={v.right} label={chord} />
             </div>
-            <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.piano(chord)} label="Pakinggan" /></div>
+            <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.piano(chord)} label="Listen" /></div>
           </div>
         )}
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className={sectionTitle}>Capo: madadaling hugis sa mahirap na key</h2>
-        <p className="text-stone-600 dark:text-stone-300">
-          Ang capo ay parang bagong "nut" sa gitara. Itinataas nito ang tono, kaya puwede mong gamitin ang madadaling hugis (C, G, D, A, E) sa ibang key.
+        <h2 className={sectionTitle}>Capo: easy shapes in a hard key</h2>
+        <p className="text-stone-300">
+          A capo is like a new "nut" on the guitar. It raises the pitch, so you can use the easy shapes (C, G, D, A, E) in other keys.
         </p>
-        <label className="flex items-center gap-3 text-sm font-semibold">
-          Key ng kanta
-          <select value={key} onChange={(event) => setKey(event.target.value)} className={`${ui.input} w-24 font-mono font-bold`}>
+        <label className="flex items-center gap-3 text-sm font-medium">
+          Song key
+          <select value={key} onChange={(event) => setKey(event.target.value)} className={`${ui.input} w-24 font-digit text-sm`}>
             {KEYS.map((k) => <option key={k}>{k}</option>)}
           </select>
         </label>
-        <p className="rounded-2xl bg-amber-50 p-4 font-semibold text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+        <p className="glass rounded-[24px] p-4 font-medium text-stone-50">
           {capo.capo === 0
-            ? `Ang ${key} ay may madali nang hugis. Walang capo na kailangan.`
-            : `Key ng ${key}: ilagay ang capo sa fret ${capo.capo}, at tugtugin ang mga hugis ng ${capo.shape}.`}
+            ? `${key} already has an easy shape. No capo needed.`
+            : `Key of ${key}: put the capo on fret ${capo.capo}, and play the ${capo.shape} shapes.`}
         </p>
       </section>
 
       <section className="flex flex-col gap-3">
         <h2 className={sectionTitle}>Nashville numbers</h2>
-        <p className="text-stone-600 dark:text-stone-300">
-          Imbes na pangalan ng chord, numero ang gamit: 1 ang key mismo, 4 at 5 ang madalas na kasunod, at 6m ang malungkot na kapatid ng 1. Kapag numero ang alam ng banda, kahit anong key ay kaya.
+        <p className="text-stone-300">
+          Instead of chord names, use numbers: 1 is the key itself, 4 and 5 often come next, and 6m is the sad sibling of 1. When the band knows the numbers, any key works.
         </p>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
           {numbers.map(({ n, chord: c }) => (
             <div key={n} className={`${ui.card} p-3 text-center`}>
-              <div className="font-mono text-xl font-bold text-amber-700 dark:text-amber-400">{n}</div>
-              <div className="font-mono font-semibold">{c}</div>
+              <div className="font-digit text-xl text-stone-50">{n}</div>
+              <div className="font-mono font-semibold text-stone-300">{c}</div>
             </div>
           ))}
         </div>
-        <p className={ui.muted}>Halimbawa: ang "1 – 5 – 6m – 4" sa key ng {key} ay {numbers[0].chord} – {numbers[4].chord} – {numbers[5].chord} – {numbers[3].chord}.</p>
+        <p className={ui.muted}>Example: "1 – 5 – 6m – 4" in the key of {key} is {numbers[0].chord} – {numbers[4].chord} – {numbers[5].chord} – {numbers[3].chord}.</p>
       </section>
     </div>
   );
@@ -149,25 +149,25 @@ export function GuitarLesson() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <h2 className={sectionTitle}>Ang unang 8 chord</h2>
-        <p className="text-stone-600 dark:text-stone-300">
-          Simulan sa Em at G, tapos isa-isahin pakanan. Sa walong ito, kaya mo na ang karamihan ng worship at OPM na kanta, lalo na kapag may capo.
+        <h2 className={sectionTitle}>Your first 8 chords</h2>
+        <p className="text-stone-300">
+          Start with Em and G, then work your way right. With these eight you can play most worship and OPM songs, especially with a capo.
         </p>
         <Chips items={BEGINNER_CHORDS} value={chord} onChange={setChord} label="Chord" render={(c) => `${BEGINNER_CHORDS.indexOf(c) + 1}. ${c}`} />
         {shape && (
           <div className={darkCard}>
-            <div className="px-1.5 font-mono text-3xl font-bold text-amber-400">{chord}</div>
+            <div className="px-1.5 font-digit text-3xl text-stone-50">{chord}</div>
             <div className="mt-2"><GuitarNeck shape={shape} label={chord} /></div>
-            <p className="mt-1 px-1.5 text-sm text-stone-300">Diinan gamit ang dulo ng daliri, malapit sa fret (hindi sa gitna). Patunugin ang bawat string isa-isa para malaman kung may namamatay.</p>
-            <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.strum(chord)} label="Pakinggan" /></div>
+            <p className="mt-1 px-1.5 text-sm text-stone-300">Press with your fingertips, close to the fret (not in the middle). Play each string one by one to hear if any is muted.</p>
+            <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.strum(chord)} label="Listen" /></div>
           </div>
         )}
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className={sectionTitle}>Mga strum pattern</h2>
-        <p className="text-stone-600 dark:text-stone-300">
-          Laging gumagalaw pataas-pababa ang kamay, kahit walang tinatamaan (·). Ang <strong>x</strong> ay maikling "chuck": idikit agad ang palad sa strings.
+        <h2 className={sectionTitle}>Strum patterns</h2>
+        <p className="text-stone-300">
+          Your hand keeps moving up and down, even when it doesn't hit (·). An <strong>x</strong> is a short "chuck": rest your palm on the strings right away.
         </p>
         <ul className="flex flex-col gap-2">
           {patterns.map((p) => {
@@ -175,17 +175,17 @@ export function GuitarLesson() {
             return (
               <li key={p.label + p.time} className={`${ui.card} flex flex-col gap-2 p-3`}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold">{p.label} <span className="font-normal text-stone-500">· {p.time}</span></span>
-                  <button type="button" onClick={() => sounds.pattern(chord, p.style, p.time)} className="text-sm font-bold text-amber-700 hover:underline dark:text-amber-400">
-                    ▶ Pakinggan sa {chord}
+                  <span className="font-medium">{p.label} <span className="font-normal text-stone-400">· {p.time}</span></span>
+                  <button type="button" onClick={() => sounds.pattern(chord, p.style, p.time)} className="rounded-full border border-white/15 px-3 py-1.5 text-sm font-medium text-stone-50 hover:bg-white/10">
+                    ▶ Listen in {chord}
                   </button>
                 </div>
                 <div className="grid gap-0.5 text-center font-mono" style={{ gridTemplateColumns: `repeat(${slots.length}, minmax(0, 1fr))` }}>
                   {slots.map((s, i) => (
-                    <div key={i} className={`text-xl font-bold ${s.stroke === "·" ? "text-stone-300 dark:text-stone-600" : i === 0 ? "text-amber-700 dark:text-amber-400" : ""}`}>{s.stroke}</div>
+                    <div key={i} className={`text-xl font-bold ${s.stroke === "·" ? "text-stone-600" : i === 0 ? "text-stone-50" : "text-stone-200"}`}>{s.stroke}</div>
                   ))}
                   {slots.map((s, i) => (
-                    <div key={`c${i}`} className={`text-[11px] ${s.count === "&" ? "text-stone-400" : "text-stone-600 dark:text-stone-300"}`}>{s.count}</div>
+                    <div key={`c${i}`} className={`text-[11px] ${s.count === "&" ? "text-stone-500" : "text-stone-300"}`}>{s.count}</div>
                   ))}
                 </div>
               </li>
@@ -210,20 +210,20 @@ export function PianoLesson() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className={sectionTitle}>Buuin ang chord: 1 – 3 – 5</h2>
-      <p className="text-stone-600 dark:text-stone-300">
-        Bilangin ang mga puti at itim na key mula sa root. <strong>Major</strong>: root, 4 na hakbang pataas, tapos 3 pa. <strong>Minor</strong>: root, 3 hakbang, tapos 4. Ang kaliwang kamay ang tumutugtog ng root sa ibaba.
+      <h2 className={sectionTitle}>Build a chord: 1 – 3 – 5</h2>
+      <p className="text-stone-300">
+        Count the white and black keys up from the root. <strong>Major</strong>: root, 4 steps up, then 3 more. <strong>Minor</strong>: root, 3 steps, then 4. The left hand plays the root down low.
       </p>
       <Chips items={KEYS} value={root} onChange={setRoot} label="Root" />
-      <Chips items={kinds} value={kind} onChange={setKind} label="Uri" render={(k) => kindLabel[k]} />
+      <Chips items={kinds} value={kind} onChange={setKind} label="Type" render={(k) => kindLabel[k]} />
       {e && (
         <div className={darkCard}>
           <div className="flex flex-wrap items-baseline gap-x-3 px-1.5">
-            <span className="font-mono text-3xl font-bold text-amber-400">{chord}</span>
+            <span className="font-digit text-3xl text-stone-50">{chord}</span>
             <span className="font-mono text-stone-300">{e.formula} = {e.tones.join(" ")}</span>
           </div>
           <div className="mt-3 overflow-hidden rounded-lg"><PianoKeyboard left={v.left} right={v.right} label={chord} /></div>
-          <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.piano(chord)} label="Pakinggan" /></div>
+          <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.piano(chord)} label="Listen" /></div>
         </div>
       )}
     </div>
@@ -237,18 +237,18 @@ export function BassLesson() {
   const pos = bassPosition(note);
   return (
     <div className="flex flex-col gap-4">
-      <h2 className={sectionTitle}>Hanapin ang root sa E at A string</h2>
-      <p className="text-stone-600 dark:text-stone-300">
-        Sa simula, sapat na ang <strong>root</strong> ng bawat chord sa beat 1. Halos lahat ng nota ay makikita sa unang 5 fret ng E at A string, kaya doon muna magsanay.
+      <h2 className={sectionTitle}>Find the root on the E and A strings</h2>
+      <p className="text-stone-300">
+        At first, the <strong>root</strong> of each chord on beat 1 is enough. Almost every note is in the first 5 frets of the E and A strings, so practice there first.
       </p>
-      <Chips items={KEYS} value={note} onChange={setNote} label="Nota" />
+      <Chips items={KEYS} value={note} onChange={setNote} label="Note" />
       <div className={darkCard}>
         <div className="px-1.5">
-          <span className="font-mono text-3xl font-bold text-amber-400">{note}</span>
-          <span className="ml-2 text-stone-300">{pos.fret === 0 ? `bukas na ${pos.string} string` : `${pos.string} string, fret ${pos.fret}`}</span>
+          <span className="font-digit text-3xl text-stone-50">{note}</span>
+          <span className="ml-2 text-stone-300">{pos.fret === 0 ? `open ${pos.string} string` : `${pos.string} string, fret ${pos.fret}`}</span>
         </div>
         <div className="mt-2"><BassNeck dots={[{ ...pos, labels: [1], active: true }]} label={`${note}: ${pos.string} string, fret ${pos.fret}`} /></div>
-        <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.bass(note)} label="Pakinggan" /></div>
+        <div className="mt-3 px-1.5"><PlayButton onClick={() => sounds.bass(note)} label="Listen" /></div>
       </div>
     </div>
   );
@@ -258,9 +258,9 @@ export function BassLesson() {
 export function DrumsLesson() {
   return (
     <div className="flex flex-col gap-4">
-      <h2 className={sectionTitle}>Ang groove ng bawat bahagi</h2>
-      <p className="text-stone-600 dark:text-stone-300">
-        Iisa ang basic na beat: kick sa 1 at 3, snare sa 2 at 4, hi-hat sa bawat &. Ang nagbabago ay kung gaano kalakas ang bawat bahagi. Pumili ng bahagi at pindutin ang ▶; bagalan muna ang tempo.
+      <h2 className={sectionTitle}>The groove for each part</h2>
+      <p className="text-stone-300">
+        The basic beat stays the same: kick on 1 and 3, snare on 2 and 4, hi-hat on every &. What changes is how big each part feels. Pick a part and press ▶; slow the tempo down first.
       </p>
       <DrumsPanel text={"[Intro]\n[Verse]\n[Pre-chorus]\n[Chorus]\n[Bridge]\n[Outro]"} initialBpm={60} />
     </div>

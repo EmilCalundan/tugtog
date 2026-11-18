@@ -37,7 +37,7 @@ export function EditorPage() {
         setTime(song.time_signature);
         setStyle(song.style);
       })
-      .catch(() => setMessage("Hindi mahanap ang kantang ito."));
+      .catch(() => setMessage("This song was not found."));
   }, [id]);
 
   if (session === null) return <Navigate to="/ako" replace />;
@@ -45,12 +45,12 @@ export function EditorPage() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!title.trim()) {
-      setMessage("Lagyan muna ng pamagat ang kanta.");
+      setMessage("Give the song a title first.");
       return;
     }
     const tempo = Number(bpm);
     if (!Number.isInteger(tempo) || tempo < 40 || tempo > 200) {
-      setMessage("Ang tempo ay dapat 40 hanggang 200 BPM.");
+      setMessage("Tempo must be 40 to 200 BPM.");
       return;
     }
     setBusy(true);
@@ -61,13 +61,13 @@ export function EditorPage() {
       );
       navigate(`/kanta/${saved.id}`, { replace: true });
     } catch {
-      setMessage("Hindi na-save. Subukan ulit.");
+      setMessage("Not saved. Try again.");
       setBusy(false);
     }
   }
 
   async function handleDelete() {
-    if (!id || !window.confirm(`Burahin ang "${title}"? Hindi na ito maibabalik.`)) return;
+    if (!id || !window.confirm(`Delete "${title}"? This cannot be undone.`)) return;
     await deleteSong(id);
     navigate("/", { replace: true });
   }
@@ -80,28 +80,28 @@ export function EditorPage() {
   return (
     <form onSubmit={handleSubmit} className={ui.page}>
       <header className="flex items-center justify-between gap-3">
-        <Link to={id ? `/kanta/${id}` : "/"} className="font-semibold text-stone-500 hover:text-stone-900 dark:text-stone-400">
-          Kanselahin
+        <Link to={id ? `/kanta/${id}` : "/"} className="font-medium text-stone-400 hover:text-stone-100">
+          Cancel
         </Link>
-        <h1 className="text-lg font-bold">{id ? "I-edit ang kanta" : "Bagong kanta"}</h1>
+        <h1 className="text-lg font-medium">{id ? "Edit song" : "New song"}</h1>
         <button type="submit" disabled={busy} className={`${ui.primary} h-10 rounded-full`}>
-          {busy ? "Sandali…" : "I-save"}
+          {busy ? "One moment…" : "Save"}
         </button>
       </header>
 
-      <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
-        Pamagat
-        <input required value={title} onChange={(e) => setTitle(e.target.value)} className={`${ui.input} w-full text-lg font-semibold`} />
+      <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
+        Title
+        <input required value={title} onChange={(e) => setTitle(e.target.value)} className={`${ui.input} w-full text-lg font-medium`} />
       </label>
 
       <div className="grid grid-cols-2 gap-3">
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
           Artist
-          <input placeholder="Opsyonal" value={artist} onChange={(e) => setArtist(e.target.value)} className={`${ui.input} w-full`} />
+          <input placeholder="Optional" value={artist} onChange={(e) => setArtist(e.target.value)} className={`${ui.input} w-full`} />
         </label>
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
-          Orihinal na key
-          <select value={originalKey} onChange={(e) => setOriginalKey(e.target.value)} className={`${ui.input} w-full font-mono font-bold text-amber-700 dark:text-amber-400`}>
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
+          Original key
+          <select value={originalKey} onChange={(e) => setOriginalKey(e.target.value)} className={`${ui.input} w-full font-digit text-sm`}>
             {KEYS.map((k) => <option key={k}>{k}</option>)}
           </select>
         </label>
@@ -109,33 +109,33 @@ export function EditorPage() {
 
       {/* Paano tutugtog ang player at drums sa kantang ito */}
       <div className="grid grid-cols-3 gap-3">
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
           Tempo (BPM)
-          <input type="number" inputMode="numeric" min={40} max={200} value={bpm} onChange={(e) => setBpm(e.target.value)} className={`${ui.input} w-full font-mono font-bold`} />
+          <input type="number" inputMode="numeric" min={40} max={200} value={bpm} onChange={(e) => setBpm(e.target.value)} className={`${ui.input} w-full font-digit text-sm`} />
         </label>
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
           Time
-          <select value={time} onChange={(e) => setTime(e.target.value as TimeSignature)} className={`${ui.input} w-full font-mono font-bold`}>
+          <select value={time} onChange={(e) => setTime(e.target.value as TimeSignature)} className={`${ui.input} w-full font-digit text-sm`}>
             <option>4/4</option>
             <option>6/8</option>
           </select>
         </label>
-        <label className="flex flex-col gap-1.5 text-sm font-semibold text-stone-600 dark:text-stone-300">
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
           Style
           <select value={style} onChange={(e) => setStyle(e.target.value as SongStyle)} disabled={time === "6/8"} className={`${ui.input} w-full disabled:opacity-50`}>
             {SONG_STYLES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
         </label>
       </div>
-      <p className="-mt-2 text-xs text-stone-500">
-        {time === "6/8" ? "Sa 6/8, ang tempo ay bawat 3 bilang (1 at 4). Iisang pattern lang muna ang 6/8." : "I-tap ang tempo sa player kung hindi mo alam ang BPM ng kanta."}
+      <p className="-mt-2 text-xs text-stone-400">
+        {time === "6/8" ? "In 6/8, the tempo counts every 3 eighths (beats 1 and 4). There is one 6/8 pattern for now." : "Tap the tempo in the player if you don't know the song's BPM."}
       </p>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="content" className="text-sm font-semibold text-stone-600 dark:text-stone-300">Chords at lyrics</label>
-        <div role="group" aria-label="Magdagdag ng bahagi" className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1 md:mx-0 md:flex-wrap md:px-0">
+        <label htmlFor="content" className="text-sm font-medium text-stone-300">Chords and lyrics</label>
+        <div role="group" aria-label="Add a section" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:px-0">
           {["Intro", "Verse", "Pre-chorus", "Chorus", "Bridge", "Outro"].map((name) => (
-            <button key={name} type="button" onClick={() => addSection(name)} className="h-8 shrink-0 whitespace-nowrap rounded-lg border border-stone-200 bg-white px-2.5 text-sm font-semibold dark:border-stone-700 dark:bg-stone-900">
+            <button key={name} type="button" onClick={() => addSection(name)} className="h-9 shrink-0 whitespace-nowrap rounded-full border border-white/12 bg-white/[0.06] px-3.5 text-sm font-medium hover:bg-white/[0.12]">
               + {name}
             </button>
           ))}
@@ -145,22 +145,22 @@ export function EditorPage() {
           rows={14}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="rounded-xl border border-stone-200 bg-white p-4 font-mono text-sm leading-relaxed focus:outline-2 focus:outline-amber-500 dark:border-stone-700 dark:bg-stone-900"
+          className="glass rounded-[24px] p-4 font-mono text-sm leading-relaxed text-stone-100 focus:border-white/40 focus:outline-none"
         />
       </div>
 
-      <p className="rounded-xl bg-amber-50 p-3.5 text-sm text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-        Isulat ang chords sa sariling linya, sa itaas ng lyrics. Lalabas ang mga ito nang kulay amber kapag tama ang pagkakasulat.
+      <p className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-sm text-stone-300">
+        Write chords on their own line, above the lyrics. They show up bright white when written correctly.
         <br />
-        Isang bar ang bawat chord. Para sa dalawang chord sa isang bar, gamitin ang <code className="font-mono font-bold">|</code>, hal.{" "}
-        <code className="font-mono font-bold">| G  D | Em  C |</code>
+        Each chord is one bar. For two chords in one bar, use <code className="font-mono font-bold text-stone-50">|</code>, e.g.{" "}
+        <code className="font-mono font-bold text-stone-50">| G  D | Em  C |</code>
       </p>
 
-      {message && <p className="font-semibold text-red-700 dark:text-red-400">{message}</p>}
+      {message && <p className="font-medium text-red-400">{message}</p>}
 
       {id && (
-        <button type="button" onClick={handleDelete} className="self-start text-sm font-semibold text-red-700 hover:underline dark:text-red-400">
-          Burahin ang kantang ito
+        <button type="button" onClick={handleDelete} className="self-start text-sm font-medium text-red-400 hover:underline">
+          Delete this song
         </button>
       )}
     </form>

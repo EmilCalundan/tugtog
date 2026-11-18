@@ -3,8 +3,8 @@
 export type Instrument = "vocals" | "gitara" | "piano" | "bass" | "drums";
 
 export const INSTRUMENTS: { id: Instrument; label: string }[] = [
-  { id: "vocals", label: "Boses" },
-  { id: "gitara", label: "Gitara" },
+  { id: "vocals", label: "Vocals" },
+  { id: "gitara", label: "Guitar" },
   { id: "piano", label: "Piano" },
   { id: "bass", label: "Bass" },
   { id: "drums", label: "Drums" },
@@ -26,7 +26,7 @@ export function instrumentTab(instrument: Instrument): "chords" | Exclude<Instru
 // Panimulang pangalan mula sa email, hal. "emil@gmail.com" → "Emil"
 export function nameFromEmail(email: string | undefined): string {
   const local = email?.split("@")[0]?.trim();
-  if (!local) return "Miyembro";
+  if (!local) return "Member";
   return (local.charAt(0).toUpperCase() + local.slice(1)).slice(0, 40);
 }
 

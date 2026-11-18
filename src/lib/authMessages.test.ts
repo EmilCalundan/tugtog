@@ -4,16 +4,16 @@ import { authErrorMessage, signUpOutcome } from "./authMessages";
 describe("authErrorMessage", () => {
   it("maling email o password", () => {
     expect(authErrorMessage({ code: "invalid_credentials", message: "Invalid login credentials" })).toBe(
-      "Mali ang email o password.",
+      "Wrong email or password.",
     );
   });
 
   it("hindi pa na-confirm ang email", () => {
-    expect(authErrorMessage({ code: "email_not_confirmed", message: "Email not confirmed" })).toMatch(/i-confirm/);
+    expect(authErrorMessage({ code: "email_not_confirmed", message: "Email not confirmed" })).toMatch(/confirm/);
   });
 
   it("gamit na ang email", () => {
-    expect(authErrorMessage({ code: "user_already_exists", message: "User already registered" })).toMatch(/May account na/);
+    expect(authErrorMessage({ code: "user_already_exists", message: "User already registered" })).toMatch(/already has an account/);
   });
 
   it("mahinang password", () => {
@@ -21,15 +21,15 @@ describe("authErrorMessage", () => {
   });
 
   it("sobrang daming email", () => {
-    expect(authErrorMessage({ code: "over_email_send_rate_limit", message: "email rate limit exceeded" })).toMatch(/Maghintay/);
+    expect(authErrorMessage({ code: "over_email_send_rate_limit", message: "email rate limit exceeded" })).toMatch(/Wait/);
   });
 
   it("walang code: tinitingnan ang mensahe", () => {
-    expect(authErrorMessage({ message: "Invalid login credentials" })).toBe("Mali ang email o password.");
+    expect(authErrorMessage({ message: "Invalid login credentials" })).toBe("Wrong email or password.");
   });
 
   it("hindi kilalang error: pangkalahatang mensahe", () => {
-    expect(authErrorMessage({ message: "Something odd" })).toBe("May nagkaproblema. Subukan ulit mamaya.");
+    expect(authErrorMessage({ message: "Something odd" })).toBe("Something went wrong. Try again later.");
   });
 });
 

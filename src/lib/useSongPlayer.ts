@@ -123,7 +123,7 @@ export function useSongPlayer(
       clearInterval(timer);
       cancelAnimationFrame(frame);
     };
-  }, [playing, band]);
+  }, [playing, band, range.from]);
 
   return position;
 }

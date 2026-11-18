@@ -1,17 +1,17 @@
 import { test, expect } from "@playwright/test";
 import { login, mockSupabase } from "./supabase-mock";
 
-test("pagbura ng account: kailangang i-type ang BURAHIN", async ({ page }) => {
+test("pagbura ng account: kailangang i-type ang DELETE", async ({ page }) => {
   await login(page);
   const calls = await mockSupabase(page);
   await page.goto("/ako");
 
-  await page.getByRole("button", { name: "Burahin ang account ko" }).click();
-  const confirm = page.getByRole("button", { name: "Burahin nang tuluyan" });
+  await page.getByRole("button", { name: "Delete my account" }).click();
+  const confirm = page.getByRole("button", { name: "Delete forever" });
   await expect(confirm).toBeDisabled();
-  await page.getByLabel("I-type ang BURAHIN para ituloy").fill("burahin");
+  await page.getByLabel("Type DELETE to continue").fill("delete");
   await expect(confirm).toBeDisabled();
-  await page.getByLabel("I-type ang BURAHIN para ituloy").fill("BURAHIN");
+  await page.getByLabel("Type DELETE to continue").fill("DELETE");
   await confirm.click();
 
   await expect(page).toHaveURL(/\/$/);
