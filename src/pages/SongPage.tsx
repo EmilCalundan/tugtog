@@ -17,11 +17,13 @@ import { beatsPerBar, ensureBand, useSongPlayer } from "../lib/useSongPlayer";
 import type { Part } from "../lib/useSongPlayer";
 import type { BandSounds } from "../lib/bandSounds";
 import { barWindow, nextChord, sectionRanges, songBars } from "../music/timeline";
-import { drumStyle } from "../music/arrangement";
+import { SONG_STYLES, drumStyle, parseStrum } from "../music/arrangement";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 import { ui } from "../components/ui";
 import { BackIcon, EditIcon } from "../components/Icons";
 import { ArcHero } from "../components/ArcHero";
+import { StrumView, strumWords } from "../components/StrumView";
+import { strumSlots } from "../music/lessons";
 
 const SIZES = ["text-sm", "text-base", "text-lg", "text-xl", "text-2xl"];
 const TABS = [
@@ -66,6 +68,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           bpm: Number(load("tugtog-bpm", "72")) || 72,
           time_signature: load("tugtog-time", "4/4") === "6/8" ? "6/8" : "4/4",
           style: (["ballad", "pop", "rock", "reggae"].includes(load("tugtog-style", "")) ? load("tugtog-style", "") : "ballad") as SongStyle,
+          strum: null,
         }
       : null,
   );
@@ -108,7 +111,7 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
   const startRange = ranges[startIndex] ?? null;
   const range = { from: startBar ?? startRange?.start ?? 0, loop: loopOn && startRange ? startRange : null };
   const parts = new Set<Part>(fullBand ? ["gitara", "piano", "bass", "drums"] : tab === "gitara" || tab === "piano" || tab === "bass" ? [tab] : []);
-  const { bar, chord: playingChord } = useSongPlayer(bandSounds, bars, { bpm, style, time }, parts, playing, range);
+  const { bar, chord: playingChord } = useSongPlayer(bandSounds, bars, { bpm, style, time, strum: song?.strum }, parts, playing, range);
   const current = playing && playingChord ? playingChord : undefined;
   // Ang bar na ipinapakita: ang tumutunog, o kung saan magsisimula
   const shownBar = Math.min(playing ? bar : range.from, Math.max(bars.length - 1, 0));
@@ -338,6 +341,22 @@ export function SongPage({ scratch = false }: { scratch?: boolean }) {
           onLoop={setLoopOn}
         />
       )}
+
+      {tab === "gitara" && (() => {
+        const slots = strumSlots(style, time, song.strum);
+        const custom = !!parseStrum(song.strum, time);
+        return (
+          <section aria-label="Strum pattern" className={`${ui.card} flex flex-col gap-3 p-4`}>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className={ui.label}>Strum</h2>
+              <span className="text-xs text-stone-400">
+                {custom ? "Song pattern" : time === "6/8" ? "6/8 pattern" : `${SONG_STYLES.find((s) => s.id === style)?.label} pattern`}
+              </span>
+            </div>
+            <StrumView slots={slots} label={`Strum: ${strumWords(slots)}`} />
+          </section>
+        );
+      })()}
 
       {tab === "gitara" ? (
         <GuitarPanel key={key} text={soundingText} shapeText={shapeText} capo={capo} current={current} />

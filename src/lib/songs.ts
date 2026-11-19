@@ -12,11 +12,12 @@ export type Song = {
   bpm: number;
   time_signature: TimeSignature;
   style: SongStyle;
+  strum: string | null; // sariling strum pattern, hal. "D-DU-UDU"; null = ayon sa style
 };
 
 export type SongInput = Omit<Song, "id" | "owner_id">;
 
-const FIELDS = "id, owner_id, title, artist, original_key, content, bpm, time_signature, style";
+const FIELDS = "id, owner_id, title, artist, original_key, content, bpm, time_signature, style, strum";
 
 // Sariling kanta lang. Ang mga kanta ng kabanda (mula sa setlist ng banda) ay hindi kasama sa library mo.
 export async function listSongs(): Promise<Song[]> {

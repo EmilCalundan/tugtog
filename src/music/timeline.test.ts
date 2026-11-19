@@ -29,6 +29,34 @@ describe("songBars", () => {
     ]);
   });
 
+  it("walang |: magkalapit na chord ay kalahating bar, malayo ay buong bar", () => {
+    const beats = songBars("G   D/F#   Em        C", 4).map((b) => b.chords.map((c) => `${c.chord}:${c.beats}`).join(" "));
+    expect(beats).toEqual(["G:2 D/F#:2", "Em:4", "C:4"]);
+  });
+
+  it("walang |: halos pantay ang pagitan, isang bar bawat chord", () => {
+    expect(songBars("D    E    C#m   F#m", 4).map((b) => b.chords.length)).toEqual([1, 1, 1, 1]);
+  });
+
+  it("walang |: siksik na pagkakasulat, isang bar bawat chord", () => {
+    expect(songBars("G D Em C", 4).length).toBe(4);
+  });
+
+  it("walang |: kulang ang natitira sa bar, iyon na lang ang tagal", () => {
+    const bars = songBars("G  D       C", 4);
+    expect(bars.map((b) => b.chords.map((c) => `${c.chord}:${c.start}+${c.beats}`).join(" "))).toEqual(["G:0+2 D:2+2", "C:0+4"]);
+  });
+
+  it("walang |, 6/8: kalahating bar ay 3", () => {
+    expect(songBars("G    Em        C       D", 6)[0].chords.map((c) => c.beats)).toEqual([3, 3]);
+  });
+
+  it("walang |: tatlong magkadikit na chord sa isang salita (Mahal na Mahal Kita Panginoon)", () => {
+    const line = "D                 G                 D G A";
+    const bars = songBars(`${line}\nMahal na mahal kita Panginoon`, 4);
+    expect(bars.map((b) => b.chords.map((c) => `${c.chord}:${c.beats}`).join(" "))).toEqual(["D:4", "G:4", "D:1 G:1 A:2"]);
+  });
+
   it("puwedeng ihalo: may linyang may | at wala", () => {
     expect(songBars("G\n| C D |", 4).length).toBe(2);
   });

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { barPlan, barEvents, drumStyle } from "./arrangement";
+import { barPlan, barEvents, drumStyle, normalizeStrum, parseStrum } from "./arrangement";
 
 const steps = (hits: { step: number }[]) => hits.map((h) => h.step);
 
@@ -101,5 +101,40 @@ describe("barEvents: dalawa o higit pang chord sa isang bar", () => {
   it("chord na walang tama sa pattern: may idinadagdag sa simula nito", () => {
     // 2 + 1 + 1 na beats: magsisimula ang ikatlong chord sa step 12, kung saan walang bass sa pattern
     expect(ev("bass", [0, 8, 12])).toEqual(["0:0:7", "8:1:4", "12:2:4"]);
+  });
+});
+
+describe("sariling strum pattern", () => {
+  it("4/4: bawat titik ay eighth note (2 na 16th)", () => {
+    const g = parseStrum("D-DU-UDU", "4/4")!;
+    expect(g.map((s) => [s.step, s.down])).toEqual([[0, true], [4, true], [6, false], [10, false], [12, true], [14, false]]);
+    expect(g[0].len).toBe(4); // tumutunog hanggang sa susunod na strum
+  });
+
+  it("x = chuck (pababa, pinipigilan), maikli", () => {
+    const g = parseStrum("D-DUxUDU", "4/4")!;
+    expect(g.find((s) => s.step === 8)).toEqual({ step: 8, len: 1, down: true, mute: true });
+  });
+
+  it("tinatanggap ang maliliit na titik, tuldok at espasyo", () => {
+    expect(normalizeStrum("d.du .udu")).toBe("D-DU-UDU");
+    expect(parseStrum("d.du .udu", "4/4")).not.toBeNull();
+  });
+
+  it("mali ang haba o may ibang titik: null", () => {
+    expect(parseStrum("D-DU", "4/4")).toBeNull();
+    expect(parseStrum("D-DU-UDZ", "4/4")).toBeNull();
+    expect(parseStrum("--------", "4/4")).toBeNull();
+    expect(parseStrum("D-DU-UDU", "6/8")).toBeNull();
+  });
+
+  it("6/8: 12 titik, bawat isa ay 16th note", () => {
+    expect(parseStrum("D-DU--D-DU--", "6/8")!.map((s) => s.step)).toEqual([0, 2, 3, 6, 8, 9]);
+  });
+
+  it("ginagamit ng barPlan kapalit ng strum ng style, pero hindi sa intro", () => {
+    expect(barPlan("rock", "4/4", "verse", "D---D---").guitar.map((s) => s.step)).toEqual([0, 8]);
+    expect(barPlan("rock", "4/4", "intro", "D---D---").guitar).toHaveLength(1);
+    expect(barPlan("rock", "4/4", "verse", "mali").guitar).toHaveLength(8);
   });
 });

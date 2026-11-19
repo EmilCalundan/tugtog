@@ -48,8 +48,8 @@ export const BEGINNER_CHORDS = ["Em", "G", "C", "D", "Am", "E", "A", "Dm"];
 export type StrumSlot = { count: string; stroke: "↓" | "↑" | "x" | "·" };
 
 // Ang strum pattern ng isang style, bilang mga kahon na may bilang at arrow
-export function strumSlots(style: SongStyle, time: TimeSignature): StrumSlot[] {
-  const plan = barPlan(style, time, "verse");
+export function strumSlots(style: SongStyle, time: TimeSignature, strum?: string | null): StrumSlot[] {
+  const plan = barPlan(style, time, "verse", strum);
   const perSlot = time === "6/8" ? 1 : 2; // 4/4: eighth notes; 6/8: 16th notes
   const slots = plan.steps / perSlot;
   return Array.from({ length: slots }, (_, i) => {

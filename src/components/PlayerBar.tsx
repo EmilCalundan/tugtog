@@ -97,7 +97,7 @@ export function PlayerBar({ playing, onToggle, bpm, onBpm, band, onBand, bars, b
       <div className="flex items-center gap-3 px-1">
         <input type="range" min={40} max={160} value={bpm} onChange={(e) => onBpm(Number(e.target.value))} aria-label="Tempo" className="min-w-0 flex-1 accent-white" />
         {time === "4/4" && (
-          <select value={style} onChange={(e) => onStyle(e.target.value as SongStyle)} aria-label="Strum style" className="h-9 shrink-0 rounded-full border border-white/12 bg-black/30 px-3 text-sm text-stone-100">
+          <select value={style} onChange={(e) => onStyle(e.target.value as SongStyle)} aria-label="Style" className="h-9 shrink-0 rounded-full border border-white/12 bg-black/30 px-3 text-sm text-stone-100">
             {SONG_STYLES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
           </select>
         )}

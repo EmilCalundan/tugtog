@@ -30,7 +30,7 @@ function voicesFor(chord: string): Voices {
   };
 }
 
-export type PlayerSettings = { bpm: number; style: SongStyle; time: TimeSignature };
+export type PlayerSettings = { bpm: number; style: SongStyle; time: TimeSignature; strum?: string | null };
 
 // Ilang beat sa isang bar, ayon sa paghahati ng songBars (4/4: 4 na quarter; 6/8: 6 na eighth)
 export function beatsPerBar(time: TimeSignature): number {
@@ -74,7 +74,7 @@ export function useSongPlayer(
       while (nextTime < audio.now + 0.15) {
         if (barIndex >= bars.length) barIndex = 0;
         const bar = bars[barIndex];
-        const plan = barPlan(settings.style, settings.time, sectionKind(bar.section));
+        const plan = barPlan(settings.style, settings.time, sectionKind(bar.section), settings.strum);
         const step = stepSeconds(settings.bpm, plan.steps);
         const perBeat = plan.steps / beatsPerBar(settings.time);
         const starts = bar.chords.map((c) => c.start * perBeat);

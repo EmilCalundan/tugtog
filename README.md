@@ -33,6 +33,8 @@
 **Play-along**
 - Plays the song bar by bar on guitar, piano, bass, or the full band, and the neck or keyboard follows along.
 - Each song stores its tempo, time signature (4/4 or 6/8), and style (ballad, pop, rock, reggae), and the strum, bass, and drum patterns follow them.
+- A song can have its own strum pattern (e.g. `D-DU-UDU`, with `x` for a chuck), shown on the Guitar tab and played by the player.
+- Chord timing follows how the chart is written: chords written close together share a bar, and `|` marks exact bars.
 - Tap tempo to match a recording.
 
 **Bands and setlists**
@@ -90,6 +92,7 @@ npm install
    2. `supabase/song-settings.sql`
    3. `supabase/teams.sql`
    4. `supabase/delete-account.sql`
+   5. `supabase/strum-pattern.sql`
 2. Create `.env.local` with your project URL and publishable key:
    ```
    VITE_SUPABASE_URL=https://your-project.supabase.co

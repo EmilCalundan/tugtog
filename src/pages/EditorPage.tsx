@@ -4,7 +4,9 @@ import { Link, Navigate, useNavigate, useParams } from "react-router";
 import { useSession } from "../lib/useSession";
 import { deleteSong, getSong, saveSong } from "../lib/songs";
 import { KEYS } from "../music/transpose";
-import { SONG_STYLES } from "../music/arrangement";
+import { SONG_STYLES, STRUM_PRESETS, normalizeStrum, parseStrum, strumLength } from "../music/arrangement";
+import { strumSlots } from "../music/lessons";
+import { StrumView, strumWords } from "../components/StrumView";
 import type { SongStyle, TimeSignature } from "../music/arrangement";
 import { ui } from "../components/ui";
 
@@ -22,6 +24,7 @@ export function EditorPage() {
   const [bpm, setBpm] = useState("72");
   const [time, setTime] = useState<TimeSignature>("4/4");
   const [style, setStyle] = useState<SongStyle>("ballad");
+  const [strum, setStrum] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -36,6 +39,7 @@ export function EditorPage() {
         setBpm(String(song.bpm));
         setTime(song.time_signature);
         setStyle(song.style);
+        setStrum(song.strum ?? "");
       })
       .catch(() => setMessage("This song was not found."));
   }, [id]);
@@ -53,10 +57,15 @@ export function EditorPage() {
       setMessage("Tempo must be 40 to 200 BPM.");
       return;
     }
+    const pattern = normalizeStrum(strum);
+    if (pattern && !parseStrum(pattern, time)) {
+      setMessage(`The strum pattern needs ${strumLength(time)} letters for ${time}: D, U, x or -.`);
+      return;
+    }
     setBusy(true);
     try {
       const saved = await saveSong(
-        { title: title.trim(), artist: artist.trim(), original_key: originalKey, content, bpm: tempo, time_signature: time, style },
+        { title: title.trim(), artist: artist.trim(), original_key: originalKey, content, bpm: tempo, time_signature: time, style, strum: pattern || null },
         id,
       );
       navigate(`/kanta/${saved.id}`, { replace: true });
@@ -128,8 +137,56 @@ export function EditorPage() {
         </label>
       </div>
       <p className="-mt-2 text-xs text-stone-400">
-        {time === "6/8" ? "In 6/8, the tempo counts every 3 eighths (beats 1 and 4). There is one 6/8 pattern for now." : "Tap the tempo in the player if you don't know the song's BPM."}
+        {time === "6/8" ? "In 6/8, the tempo counts every 3 eighths (beats 1 and 4)." : "Tap the tempo in the player if you don't know the song's BPM."}
       </p>
+
+      {/* Sariling strum pattern: walang laman = ayon sa style */}
+      <div className={`${ui.card} flex flex-col gap-3 p-4`}>
+        <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-300">
+          Strum pattern
+          <input
+            value={strum}
+            onChange={(e) => setStrum(e.target.value)}
+            placeholder={`e.g. D-DU-UDU (empty = ${time === "6/8" ? "6/8" : SONG_STYLES.find((s) => s.id === style)?.label})`}
+            maxLength={24}
+            autoCapitalize="characters"
+            spellCheck={false}
+            className={`${ui.input} w-full font-mono tracking-[0.3em] placeholder:font-sans placeholder:tracking-normal`}
+          />
+        </label>
+        <div role="group" aria-label="Strum presets" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+          {STRUM_PRESETS[time].map((p) => (
+            <button
+              key={p.pattern}
+              type="button"
+              onClick={() => setStrum(p.pattern)}
+              aria-pressed={normalizeStrum(strum) === p.pattern}
+              className="h-9 shrink-0 whitespace-nowrap rounded-full border border-white/12 bg-white/[0.06] px-3.5 text-sm font-medium hover:bg-white/[0.12] aria-pressed:border-white aria-pressed:bg-white aria-pressed:text-stone-950"
+            >
+              {p.label}
+            </button>
+          ))}
+          {strum && (
+            <button type="button" onClick={() => setStrum("")} className="h-9 shrink-0 whitespace-nowrap px-2 text-sm font-medium text-stone-400 hover:text-stone-100">
+              Use style
+            </button>
+          )}
+        </div>
+        {(() => {
+          const pattern = normalizeStrum(strum);
+          const ok = !pattern || parseStrum(pattern, time);
+          if (!ok) {
+            return (
+              <p className="text-xs text-stone-300">
+                {pattern.length}/{strumLength(time)} letters. Use <b>D</b> down, <b>U</b> up, <b>x</b> chuck, <b>-</b> rest
+                {time === "4/4" ? " (one letter per eighth note: 1 & 2 & 3 & 4 &)." : " (one letter per 16th note: 1 & 2 & 3 & 4 & 5 & 6 &)."}
+              </p>
+            );
+          }
+          const slots = strumSlots(style, time, pattern || null);
+          return <StrumView slots={slots} label={`Strum: ${strumWords(slots)}`} />;
+        })()}
+      </div>
 
       <div className="flex flex-col gap-1.5">
         <label htmlFor="content" className="text-sm font-medium text-stone-300">Chords and lyrics</label>
@@ -152,7 +209,7 @@ export function EditorPage() {
       <p className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-sm text-stone-300">
         Write chords on their own line, above the lyrics. They show up bright white when written correctly.
         <br />
-        Each chord is one bar. For two chords in one bar, use <code className="font-mono font-bold text-stone-50">|</code>, e.g.{" "}
+        Chords written close together share a bar; a chord with lots of space after it gets a whole bar. For exact timing, use <code className="font-mono font-bold text-stone-50">|</code>, e.g.{" "}
         <code className="font-mono font-bold text-stone-50">| G  D | Em  C |</code>
       </p>
 

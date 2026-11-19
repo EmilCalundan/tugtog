@@ -19,8 +19,44 @@ function splitBar(chords: string[], beatsPerBar: number): BarChord[] {
   });
 }
 
+// Linyang walang "|": ang layo ng chord sa kasunod nito ang nagsasabi kung gaano ito katagal.
+// Ang pinakamalaking pagitan sa linya = isang buong bar; mas maikli = kalahating bar;
+// halos magkadikit (hal. "D G A" sa iisang salita) = isang beat bawat isa.
+// Kapag halos pantay ang pagitan (o siksik ang pagkakasulat, hal. "G D Em C"), isang bar bawat chord.
+function spacedBars(line: string, beatsPerBar: number): BarChord[][] {
+  const found = [...line.matchAll(/[^\s|]+/g)].map((m) => ({ chord: m[0], at: m.index ?? 0 }));
+  const whole = () => found.map(({ chord }) => [{ chord, start: 0, beats: beatsPerBar }]);
+  if (found.length < 3) return whole();
+
+  const gaps = found.slice(0, -1).map((c, i) => found[i + 1].at - c.at);
+  const widest = Math.max(...gaps);
+  const narrowest = Math.min(...gaps);
+  if (widest < 6 || narrowest / widest >= 0.6) return whole();
+
+  const half = Math.max(1, Math.round(beatsPerBar / 2));
+  const quarter = Math.max(1, Math.round(beatsPerBar / 4));
+  const bars: BarChord[][] = [];
+  let bar: BarChord[] = [];
+  let used = 0;
+  found.forEach(({ chord }, i) => {
+    const last = i === found.length - 1;
+    const ratio = last ? 1 : gaps[i] / widest;
+    const wanted = ratio >= 0.75 ? beatsPerBar : ratio >= 0.35 ? half : quarter;
+    // Hindi lalampas sa bar: kung kulang ang natitira, iyon na lang ang tagal
+    const beats = last && used > 0 ? beatsPerBar - used : Math.min(wanted, beatsPerBar - used);
+    bar.push({ chord, start: used, beats });
+    used += beats;
+    if (used >= beatsPerBar) {
+      bars.push(bar);
+      bar = [];
+      used = 0;
+    }
+  });
+  return bars;
+}
+
 // Lahat ng bar ng kanta mula simula hanggang dulo.
-// Walang "|": bawat chord ay isang bar. May "|": bawat pagitan ng "|" ay isang bar.
+// Walang "|": ayon sa layo ng mga chord (tingnan ang spacedBars). May "|": bawat pagitan ng "|" ay isang bar.
 // beatsPerBar: 4 sa 4/4 (quarter notes), 6 sa 6/8 (eighth notes).
 export function songBars(text: string, beatsPerBar: number): Bar[] {
   const bars: Bar[] = [];
@@ -29,10 +65,12 @@ export function songBars(text: string, beatsPerBar: number): Bar[] {
     if (isSectionLine(line)) {
       section = line.trim().slice(1, -1).trim();
     } else if (isChordLine(line)) {
-      const groups = line.includes("|")
-        ? line.split("|").map(chordTokens).filter((g) => g.length > 0)
-        : chordTokens(line).map((c) => [c]);
-      for (const group of groups) bars.push({ section, chords: splitBar(group, beatsPerBar) });
+      if (line.includes("|")) {
+        const groups = line.split("|").map(chordTokens).filter((g) => g.length > 0);
+        for (const group of groups) bars.push({ section, chords: splitBar(group, beatsPerBar) });
+      } else {
+        for (const chords of spacedBars(line, beatsPerBar)) bars.push({ section, chords });
+      }
     }
   }
   return bars;

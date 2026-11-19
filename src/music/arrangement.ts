@@ -36,6 +36,50 @@ function strums(pattern: string, mute = false): Strum[] {
   return out.map((s, i) => ({ ...s, len: mute ? 1 : (out[i + 1]?.step ?? pattern.length * 2) - s.step }));
 }
 
+// Sariling strum pattern ng kanta. Bawat titik ay isang "slot":
+// 4/4 = 8 slot (eighth notes), 6/8 = 12 slot (16th notes).
+// D = pababa, U = pataas, x = chuck (pinipigilan ng palad), - = pahinga
+export const STRUM_PRESETS: Record<TimeSignature, { pattern: string; label: string }[]> = {
+  "4/4": [
+    { pattern: "D-DU-UDU", label: "Island" },
+    { pattern: "D-D-DUDU", label: "Folk" },
+    { pattern: "D-DUxUDU", label: "With chuck" },
+    { pattern: "D---D---", label: "Slow" },
+    { pattern: "DDDDDDDD", label: "Driving" },
+  ],
+  "6/8": [
+    { pattern: "D-DU--D-DU--", label: "6/8 ballad" },
+    { pattern: "D-----D-----", label: "Slow" },
+    { pattern: "D-D-D-D-D-D-", label: "Even" },
+  ],
+};
+
+export function strumLength(time: TimeSignature): number {
+  return time === "6/8" ? 12 : 8;
+}
+
+// Linisin ang isinulat: walang espasyo, malaking D/U, maliit na x, "-" sa pahinga
+export function normalizeStrum(text: string): string {
+  return [...text.replace(/\s+/g, "")]
+    .map((c) => (c === "d" ? "D" : c === "u" ? "U" : c === "X" ? "x" : c === "." ? "-" : c))
+    .join("");
+}
+
+// Gawing listahan ng strum, o null kung mali ang haba o may ibang titik
+export function parseStrum(text: string | null | undefined, time: TimeSignature): Strum[] | null {
+  if (!text) return null;
+  const pattern = normalizeStrum(text);
+  if (pattern.length !== strumLength(time) || !/^[DUx-]+$/.test(pattern) || !/[DUx]/.test(pattern)) return null;
+  const perSlot = time === "6/8" ? 1 : 2;
+  const steps = pattern.length * perSlot;
+  const out: Strum[] = [];
+  [...pattern].forEach((c, i) => {
+    if (c === "-") return;
+    out.push({ step: i * perSlot, len: 0, down: c !== "U", mute: c === "x" || undefined });
+  });
+  return out.map((s, i) => ({ ...s, len: s.mute ? 1 : (out[i + 1]?.step ?? steps) - s.step }));
+}
+
 function hits(stepsList: number[], len: number): Hit[] {
   return stepsList.map((step) => ({ step, len }));
 }
@@ -95,7 +139,8 @@ function stretch(lanes: Partial<Record<Lane, number[]>>, from: number, to: numbe
   return out;
 }
 
-export function barPlan(style: SongStyle, time: TimeSignature, kind: Kind): BarPlan {
+// `strum`: sariling pattern ng kanta (kapag tama), kapalit ng strum ng style
+export function barPlan(style: SongStyle, time: TimeSignature, kind: Kind, strum?: string | null): BarPlan {
   const steps = time === "6/8" ? 12 : 16;
   const g = groove(drumStyle(style, time), kind);
   // Intro at outro: isang mahabang strum at chord bawat bar, para magaan
@@ -110,7 +155,8 @@ export function barPlan(style: SongStyle, time: TimeSignature, kind: Kind): BarP
     };
   }
   const parts = time === "6/8" ? SIX_EIGHT : FOUR[style];
-  return { steps, ...parts, drums: stretch(g.lanes, g.steps, steps) };
+  const custom = parseStrum(strum, time);
+  return { steps, ...parts, ...(custom ? { guitar: custom } : {}), drums: stretch(g.lanes, g.steps, steps) };
 }
 
 export type BarPart = "guitar" | "pianoRight" | "pianoLeft" | "bass";

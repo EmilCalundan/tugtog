@@ -17,6 +17,36 @@ test("gumawa ng kanta: nase-save ang tempo, time at style", async ({ page }) => 
   expect(insert?.body).toMatchObject({ title: "Bagong Kanta", bpm: 63, time_signature: "6/8", style: "ballad" });
 });
 
+test("sariling strum pattern: preset, nase-save, at lumalabas sa Guitar tab", async ({ page }) => {
+  await login(page);
+  const calls = await mockSupabase(page, { saved: { ...SONG, id: "bagong-kanta", strum: "D-D-DUDU" }, songs: [{ ...SONG, strum: "D-D-DUDU" }] });
+
+  await page.goto("/kanta/bago");
+  await page.getByLabel("Title").fill("Mahal na Mahal Kita");
+  await page.getByRole("button", { name: "Folk" }).click();
+  await expect(page.getByRole("img", { name: "Strum: down, rest, down, rest, down, up, down, up" })).toBeVisible();
+  await page.getByRole("button", { name: "Save" }).click();
+
+  const insert = calls.find((c) => c.method === "POST" && c.path.startsWith("/rest/v1/songs"));
+  expect(insert?.body).toMatchObject({ strum: "D-D-DUDU" });
+
+  await page.goto("/kanta/s1?tab=gitara");
+  const card = page.getByRole("region", { name: "Strum pattern" });
+  await expect(card).toContainText("Song pattern");
+});
+
+test("maling strum pattern: hindi nase-save", async ({ page }) => {
+  await login(page);
+  const calls = await mockSupabase(page);
+  await page.goto("/kanta/bago");
+  await page.getByLabel("Title").fill("Mali");
+  await page.getByLabel("Strum pattern").fill("D-DU");
+  await expect(page.getByText("4/8 letters")).toBeVisible();
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByText(/needs 8 letters/)).toBeVisible();
+  expect(calls.some((c) => c.method === "POST")).toBe(false);
+});
+
 test("bawal ang tempo na lampas sa 200", async ({ page }) => {
   await login(page);
   const calls = await mockSupabase(page);
